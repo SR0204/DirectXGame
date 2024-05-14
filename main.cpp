@@ -103,7 +103,7 @@ IDxcBlob* CompilerShader(
 		L"-E",L"main",//エントリーポイントの指定。基本的にmain以外にはしない
 		L"-T",profile,//ShaderProfileの設定
 		L"-Zi",L"-Qembed_debug",//デバッグ用の情報を埋め込む
-		L"-0d",//最適化を外しておく
+		L"-Od",//最適化を外しておく
 		L"-Zpr",//メモリレイアウトは行優先
 	};
 
