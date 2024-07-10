@@ -191,8 +191,6 @@ ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes)
 
 	//呼び出し
 	//ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(Vector4) * 3);
-
-
 }
 
 //DescriptorHeapの作成関数
@@ -821,6 +819,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//wvp用のリソースを作る。今回はMatrix4x4  1つ分のサイズを用意する
 	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(Matrix4x4));
 
+	ID3D12Resource* indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
+
+	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
+	//リソースの先頭のアドレスから使う
+	indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
+
+	//使用するリソースのサイズはインデックス6つ分のサイズ
+	indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
+
+	//インデックスはuint32_tとする
+	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
+
+	//インデックスリソースにデータを書き込む
+	uint32_t* indexDateSprite = nullptr;
+	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDateSprite));
+	indexDateSprite[0] = 0; indexDateSprite[1] = 1; indexDateSprite[2] = 2;
+	indexDateSprite[3] = 1; indexDateSprite[4] = 3; indexDateSprite[5] = 2;
+
 	//マテリアルにデータを書き込む
 	Vector4* materialData = nullptr;//Vector4* materialData = nullptr;
 
@@ -1109,6 +1125,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			//commandList->DrawInstanced(3, 1, 0, 0);
 			commandList->DrawInstanced(6, 1, 0, 0);
 
+
+
 			//Spriteの描画
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//VBVを設定
 
@@ -1117,6 +1135,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 			//描画!(DrawCall/ドローコール)
 			commandList->DrawInstanced(6, 1, 0, 0);
+
+
+			commandList->IASetIndexBuffer(&indexBufferViewSprite);//IBVの設定
+
+			//描画!!(ドローコール)６個のインデックスを使用し１つのインスタンスを描画
+			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);	
 
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
