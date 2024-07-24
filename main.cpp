@@ -363,6 +363,9 @@ ModelDate LoadObjFile(const std::string& directoryPath, const std::string& filen
 			normals.push_back(normal);
 		}
 		else if (identifier == "f") {
+
+			VertexData triangle[3];
+
 			//面は三角形限定。その他は未対応
 			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
 				std::string vertexDefinition;
@@ -380,11 +383,22 @@ ModelDate LoadObjFile(const std::string& directoryPath, const std::string& filen
 				Vector4 position = positions[elementIndices[0] - 1];
 				Vector2 texcoord = texcoords[elementIndices[1] - 1];
 				Vector3 normal = normals[elementIndices[2] - 1];
+				position.x *= -1.0f;
+				position.y *= 1.0f;
+				normal.x *= -1.0f;
+				normal.y *= 1.0f;
+
 				VertexData vertex = { position,texcoord,normal };
 				modelData.vertices.push_back(vertex);
+
+				triangle[faceVertex] = { position,texcoord,normal };
 			}
+			modelData.vertices.push_back(triangle[2]);
+			modelData.vertices.push_back(triangle[1]);
+			modelData.vertices.push_back(triangle[0]);
 		}
 	}
+	return modelData;
 }
 
 
@@ -850,10 +864,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 
+	//モデル読み込み
+	ModelDate modelDate = LoadObjFile("Resources","plane.obj");
+
 	//頂点リソース用のヒープ設定
 	D3D12_HEAP_PROPERTIES uploadHeapProoerties{};
 	uploadHeapProoerties.Type = D3D12_HEAP_TYPE_UPLOAD;//UploadHeapを使う
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelDate.vertices.size());
+
+
+
+	//頂点リソースを作る
+	//ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelDate.vertices.size());
+
+	//頂点バッファービューを作成する
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();//リソースの先頭のアドレスを使う
+	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelDate.vertices.size());//使用するリソースのサイズは頂点のサイズ
+	vertexBufferView.StrideInBytes = sizeof(VertexData);//1頂点あたりのサイズ
+
+	//頂点リソースにデータを書き込む
+	//VertexData* vertexData = nullptr;
+	//vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));//書き込むためのアドレスを取得
+	
+
 	//頂点リソースの設定
 	D3D12_RESOURCE_DESC vertexResourceDesc{};
 	//バッファリソース、テクチャの場合はまた別の設定をする
@@ -871,13 +905,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	hr = device->CreateCommittedResource(&uploadHeapProoerties, D3D12_HEAP_FLAG_NONE, &vertexResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexResource));
 	assert(SUCCEEDED(hr));
 	//頂点バッファビューを作成する
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-	//リソースの先頭のアドレスから使う
-	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	//仕様するリソースのサイズは頂点３つ分のサイズ
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
-	//1頂点当たりのサイズ
-	vertexBufferView.StrideInBytes = sizeof(VertexData);
+	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+	////リソースの先頭のアドレスから使う
+	//vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+	////仕様するリソースのサイズは頂点３つ分のサイズ
+	//vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
+	////1頂点当たりのサイズ
+	//vertexBufferView.StrideInBytes = sizeof(VertexData);
 	//マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する
 	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Vector4));//ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Vector4));
 
@@ -930,6 +964,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	VertexData* vertexData = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+
+	std::memcpy(vertexData, modelDate.vertices.data(), sizeof(VertexData)* modelDate.vertices.size());//頂点リソースをコピー
+
 	//左下
 	vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
 	vertexData[0].texcoord = { 0.0f,1.0f };
@@ -950,7 +987,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	vertexData[5].position = { 0.5f,-0.5f,-0.5f,1.0f };
 	vertexData[5].texcoord = { 1.0f,1.0f };
 
-	
+
 
 	//Sprite用の頂点リソースを作る
 	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
@@ -1010,7 +1047,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
 	*transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
 
-	
+
 
 	//ビューポート
 	D3D12_VIEWPORT viewport{};
@@ -1083,7 +1120,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 
-	
+
 
 
 	MSG msg{};
@@ -1169,7 +1206,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			//指定した深度で画面全体をクリアする
 			commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-
+			commandList->DrawInstanced(UINT(modelDate.vertices.size()), 1, 0, 0);
 
 
 
@@ -1187,8 +1224,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			ImGui::Render();
 
 			//描画！（DrawCall/ドローコール)。３頂点で１つのインスタンス。インスタンスについては今後
-			//commandList->DrawInstanced(3, 1, 0, 0);
-			commandList->DrawInstanced(6, 1, 0, 0);
+			commandList->DrawInstanced(UINT(modelDate.vertices.size()), 1, 0, 0);
+			//commandList->DrawInstanced(UINT(modelDate.vertices.size()), 1, 0, 0);
 
 
 
@@ -1199,13 +1236,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 
 			//描画!(DrawCall/ドローコール)
-			commandList->DrawInstanced(6, 1, 0, 0);
+			//commandList->DrawInstanced(UINT(modelDate.vertices.size()), 1, 0, 0);
 
 
-			commandList->IASetIndexBuffer(&indexBufferViewSprite);//IBVの設定
+			//commandList->IASetIndexBuffer(&indexBufferViewSprite);//IBVの設定
 
 			//描画!!(ドローコール)６個のインデックスを使用し１つのインスタンスを描画
-			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);	
+			//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
