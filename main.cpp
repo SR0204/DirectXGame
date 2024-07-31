@@ -865,7 +865,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	assert(SUCCEEDED(hr));
 
 	//モデル読み込み
-	ModelDate modelDate = LoadObjFile("Resources","plane.obj");
+	ModelDate modelDate = LoadObjFile("Resources/model","plane.obj");
 
 	//頂点リソース用のヒープ設定
 	D3D12_HEAP_PROPERTIES uploadHeapProoerties{};
@@ -967,25 +967,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 	std::memcpy(vertexData, modelDate.vertices.data(), sizeof(VertexData)* modelDate.vertices.size());//頂点リソースをコピー
 
-	//左下
-	vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
-	vertexData[0].texcoord = { 0.0f,1.0f };
-	//上
-	vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
-	vertexData[1].texcoord = { 0.5f,0.0f };
-	//右下
-	vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
-	vertexData[2].texcoord = { 1.0f,1.0f };
+	////左下
+	//vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
+	//vertexData[0].texcoord = { 0.0f,1.0f };
+	////上
+	//vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
+	//vertexData[1].texcoord = { 0.5f,0.0f };
+	////右下
+	//vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
+	//vertexData[2].texcoord = { 1.0f,1.0f };
 
-	//左下2
-	vertexData[3].position = { -0.5f,-0.5f,0.5f,1.0f };
-	vertexData[3].texcoord = { 0.0f,1.0f };
-	//上2
-	vertexData[4].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexData[4].texcoord = { 0.5f,0.0f };
-	//右下2
-	vertexData[5].position = { 0.5f,-0.5f,-0.5f,1.0f };
-	vertexData[5].texcoord = { 1.0f,1.0f };
+	////左下2
+	//vertexData[3].position = { -0.5f,-0.5f,0.5f,1.0f };
+	//vertexData[3].texcoord = { 0.0f,1.0f };
+	////上2
+	//vertexData[4].position = { 0.0f,0.0f,0.0f,1.0f };
+	//vertexData[4].texcoord = { 0.5f,0.0f };
+	////右下2
+	//vertexData[5].position = { 0.5f,-0.5f,-0.5f,1.0f };
+	//vertexData[5].texcoord = { 1.0f,1.0f };
 
 
 
@@ -1120,9 +1120,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 
-
-
-
 	MSG msg{};
 	while (msg.message != WM_QUIT) {
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -1224,7 +1221,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			ImGui::Render();
 
 			//描画！（DrawCall/ドローコール)。３頂点で１つのインスタンス。インスタンスについては今後
-			commandList->DrawInstanced(UINT(modelDate.vertices.size()), 1, 0, 0);
+			//commandList->DrawInstanced(UINT(modelDate.vertices.size()), 1, 0, 0);
 			//commandList->DrawInstanced(UINT(modelDate.vertices.size()), 1, 0, 0);
 
 
@@ -1239,10 +1236,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			//commandList->DrawInstanced(UINT(modelDate.vertices.size()), 1, 0, 0);
 
 
-			//commandList->IASetIndexBuffer(&indexBufferViewSprite);//IBVの設定
+			commandList->IASetIndexBuffer(&indexBufferViewSprite);//IBVの設定
 
 			//描画!!(ドローコール)６個のインデックスを使用し１つのインスタンスを描画
-			//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			commandList->DrawIndexedInstanced(4, 1, 0, 0, 0);
 
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
