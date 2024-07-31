@@ -384,9 +384,9 @@ ModelDate LoadObjFile(const std::string& directoryPath, const std::string& filen
 				Vector2 texcoord = texcoords[elementIndices[1] - 1];
 				Vector3 normal = normals[elementIndices[2] - 1];
 				position.x *= -1.0f;
-				position.y *= 1.0f;
+				position.y *= -1.0f;
 				normal.x *= -1.0f;
-				normal.y *= 1.0f;
+				normal.y *= -1.0f;
 
 				VertexData vertex = { position,texcoord,normal };
 				modelData.vertices.push_back(vertex);
@@ -884,9 +884,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	vertexBufferView.StrideInBytes = sizeof(VertexData);//1頂点あたりのサイズ
 
 	//頂点リソースにデータを書き込む
-	//VertexData* vertexData = nullptr;
-	//vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));//書き込むためのアドレスを取得
-	
+	VertexData* vertexData = nullptr;
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));//書き込むためのアドレスを取得
+	std::memcpy(vertexData, modelDate.vertices.data(), sizeof(VertexData)* modelDate.vertices.size());
 
 	//頂点リソースの設定
 	D3D12_RESOURCE_DESC vertexResourceDesc{};
@@ -961,7 +961,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	*wvpData = MakeIdentity4x4();
 
 	//頂点リソースにデータを書き込む
-	VertexData* vertexData = nullptr;
+	//VertexData* vertexData = nullptr;
+	
 	//書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 
@@ -1135,7 +1136,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 			//選択して色が変えられる
 			ImGui::Begin("Window");
-			ImGui::DragFloat3("color", &materialData->x, 0.01f);//ImGui::DragFloat3("color", &materialData->x, 0.01f);
+			ImGui::ColorEdit3("color", &materialData->x);//ImGui::DragFloat3("color", &materialData->x, 0.01f);
 			ImGui::End();
 
 			transform.rotate.y += 0.03f;
@@ -1239,7 +1240,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			commandList->IASetIndexBuffer(&indexBufferViewSprite);//IBVの設定
 
 			//描画!!(ドローコール)６個のインデックスを使用し１つのインスタンスを描画
-			commandList->DrawIndexedInstanced(4, 1, 0, 0, 0);
+			//commandList->DrawIndexedInstanced(4, 1, 0, 0, 0);
 
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
