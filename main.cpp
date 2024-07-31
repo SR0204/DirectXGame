@@ -1039,14 +1039,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//単位行列を書き込んでおく
 	*transformationMatrixDataSprite = MakeIdentity4x4();
 
-	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+	
 
-	//Sprite用のWorldViewProjectionMatrixを作る
-	Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
-	Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
-	Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(kCLientWidth), float(kCLientHeight), 0.0f, 100.0f);
-	Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
-	*transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
+	
 
 
 
@@ -1117,7 +1112,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 	Transform cameratransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-5.0f} };
 
-
+	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 
 
 
@@ -1137,6 +1132,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			//選択して色が変えられる
 			ImGui::Begin("Window");
 			ImGui::ColorEdit3("color", &materialData->x);//ImGui::DragFloat3("color", &materialData->x, 0.01f);
+
+			//真ん中の四角形
+			ImGui::DragFloat3("rotate", &transform.rotate.x, 0.01f);
+			ImGui::DragFloat3("ModelScale", &transform.scale.x, 0.01f);
+			ImGui::DragFloat3("ModelTransform", &transform.translate.x, 0.01f);
+
+			//左が側の四角形
+			ImGui::DragFloat3("rotate2", &transformSprite.rotate.x, 0.01f);
+			ImGui::DragFloat3("ModelScale2", &transformSprite.scale.x, 0.01f);
+			ImGui::DragFloat3("ModelTransform2", &transformSprite.translate.x, 0.01f);
+
 			ImGui::End();
 
 			transform.rotate.y += 0.03f;
@@ -1150,7 +1156,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			Matrix4x4 worldViewprojectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 			*transformationMatrixData = worldViewprojectionMatrix;
 
-
+			//Sprite用のWorldViewProjectionMatrixを作る
+			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
+			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
+			Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(kCLientWidth), float(kCLientHeight), 0.0f, 100.0f);
+			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
+			*transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
 
 			//これから書き込むバックバッファのインデックスを取得
 			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
@@ -1234,13 +1245,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 
 			//描画!(DrawCall/ドローコール)
-			//commandList->DrawInstanced(UINT(modelDate.vertices.size()), 1, 0, 0);
+			commandList->DrawInstanced(UINT(modelDate.vertices.size()), 1, 0, 0);
 
 
 			commandList->IASetIndexBuffer(&indexBufferViewSprite);//IBVの設定
 
 			//描画!!(ドローコール)６個のインデックスを使用し１つのインスタンスを描画
-			//commandList->DrawIndexedInstanced(4, 1, 0, 0, 0);
+			commandList->DrawIndexedInstanced(4, 1, 0, 0, 0);
 
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
