@@ -1133,6 +1133,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			ImGui::Begin("Window");
 			ImGui::ColorEdit3("color", &materialData->x);//ImGui::DragFloat3("color", &materialData->x, 0.01f);
 
+
 			//真ん中の四角形
 			ImGui::DragFloat3("rotate", &transform.rotate.x, 0.01f);
 			ImGui::DragFloat3("ModelScale", &transform.scale.x, 0.01f);
