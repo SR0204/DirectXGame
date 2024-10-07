@@ -490,8 +490,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	input = new Input();
 	input->Initialize(wc.hInstance, hwnd);
 
+	//入力の更新
+	input->Update();
+
 	//入力解放
 	delete input;
+
+
 
 
 	IDXGIFactory7* dxgiFactory = nullptr;
@@ -1143,19 +1148,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 		}
 		else {
 
-			//キーボード情報の取得開始
-			keyboard->Acquire();
-
-			//全キーの入力状態を取得する
-			BYTE key[256] = {};
-			keyboard->GetDeviceState(sizeof(key), key);
+			
 
 			//数字の0キーが押されていたら
-			if (key[DIK_0]) {
+			//if (key[DIK_0]) {
 
-				OutputDebugStringA("Hit 0/n");//出力ウィンドウに[Hit 0]と表示
+			//	OutputDebugStringA("Hit 0/n");//出力ウィンドウに[Hit 0]と表示
 
-			}
+			//}
 
 
 
