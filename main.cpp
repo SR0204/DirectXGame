@@ -43,7 +43,29 @@ struct VertexData {
 };
 
 
+enum BlendMode {
 
+	//ブレンドなし
+	kBlendModeNone,
+
+	//通常のαブレンド,Src*SrcA+Dest*(1-SrcA)
+	kBlendModeNormal,
+
+	//加算,Src*SrcA+Dest*1
+	kBlendModeAdd,
+
+	//減算 Dest*1-Src*SrcA
+	kBlendModeSubtract,
+
+	//乗算,Src*0+Dest*Src
+	kBlendModeMultiply,
+
+	//スクリーン,Src*(1-Dest)+Dest*1
+	kBlendModeScreen,
+
+	//利用していけない
+	kCountOfBlendMode,
+};
 
 
 //ウィンドウプロシージャ
@@ -802,6 +824,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//すべての色要素を書き込む
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+
+
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+
 	//RasiterzerStateの設定
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
 	//裏面(時計回り）を表示しない
@@ -865,7 +902,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	assert(SUCCEEDED(hr));
 
 	//モデル読み込み
-	ModelDate modelDate = LoadObjFile("Resources/model","plane.obj");
+	ModelDate modelDate = LoadObjFile("Resources/model", "plane.obj");
 
 	//頂点リソース用のヒープ設定
 	D3D12_HEAP_PROPERTIES uploadHeapProoerties{};
@@ -886,7 +923,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//頂点リソースにデータを書き込む
 	VertexData* vertexData = nullptr;
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));//書き込むためのアドレスを取得
-	std::memcpy(vertexData, modelDate.vertices.data(), sizeof(VertexData)* modelDate.vertices.size());
+	std::memcpy(vertexData, modelDate.vertices.data(), sizeof(VertexData) * modelDate.vertices.size());
 
 	//頂点リソースの設定
 	D3D12_RESOURCE_DESC vertexResourceDesc{};
@@ -962,11 +999,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 	//頂点リソースにデータを書き込む
 	//VertexData* vertexData = nullptr;
-	
+
 	//書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 
-	std::memcpy(vertexData, modelDate.vertices.data(), sizeof(VertexData)* modelDate.vertices.size());//頂点リソースをコピー
+	std::memcpy(vertexData, modelDate.vertices.data(), sizeof(VertexData) * modelDate.vertices.size());//頂点リソースをコピー
 
 	////左下
 	//vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
@@ -1039,9 +1076,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//単位行列を書き込んでおく
 	*transformationMatrixDataSprite = MakeIdentity4x4();
 
-	
 
-	
+
+
 
 
 
@@ -1137,6 +1174,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			ImGui::DragFloat3("rotate", &transform.rotate.x, 0.01f);
 			ImGui::DragFloat3("ModelScale", &transform.scale.x, 0.01f);
 			ImGui::DragFloat3("ModelTransform", &transform.translate.x, 0.01f);
+			
 
 			//左が側の四角形
 			ImGui::DragFloat3("rotate2", &transformSprite.rotate.x, 0.01f);
