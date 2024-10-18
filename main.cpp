@@ -17,6 +17,9 @@
 #include<fstream>
 #include<sstream>
 #include<vector>
+#include"object3d.hlsli"
+#include"Particle.hlsli"
+#include <wrl/client.h>
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -51,6 +54,12 @@ struct ModelData {
 	std::vector<VertexData>vertices;
 	MaterialData material;
 };
+
+struct TransformationMatrix {
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+};
+
 
 
 
@@ -274,6 +283,24 @@ ID3D12Resource* CreateTextureResource(ID3D12Device* device, const DirectX::TexMe
 
 }
 
+//SRVの作成(関数化）
+D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index)
+{
+	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	handleCPU.ptr += (descriptorSize * index);
+	return handleCPU;
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index)
+{
+	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
+	handleGPU.ptr += (descriptorSize * index);
+	return handleGPU;
+}
+
+
+
+
 void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages)
 {
 	//Meta情報を取得
@@ -468,8 +495,6 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 
 
 
-
-
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
@@ -478,6 +503,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 	const int32_t kCLientWidth = 1280;
 	const int32_t kCLientHeight = 720;
+
 
 	RECT wrc = { 0,0,kCLientWidth,kCLientHeight };
 
@@ -701,76 +727,119 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//二つ目を作る
 	device->CreateRenderTargetView(swapChainResources[1], &rtvDesc, rtvHandles[1]);
 
-	////これから書き込むバックバッファのインデックスを取得
-	//UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
-	////TransitionBarrierの設定
-	//D3D12_RESOURCE_BARRIER barrier{};
-	////今回のバリアはTransition
-	//barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	////Noneにしておく
-	//barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	////バリアを張る対象のリソース。現在のバックバッファに対して行う
-	//barrier.Transition.pResource = swapChainResources[backBufferIndex];
-	////遷移前(現在）のResourceState
-	//barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-	////遷移後のResourceState
-	//barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	////TransitionBarrierを張る
-	//commandList->ResourceBarrier(1, &barrier);
+
+
+	const uint32_t kNumInstance = 10;//インスタンス数
+
+	//Instancing用のTransformationMatrixリソースを作る
+	Microsoft::WRL::ComPtr<ID3D12Resource>instancingResource = CreateBufferResource(device, sizeof(TransformationMatrix) * kNumInstance);
+
+	//書き込むためのアドレスを取得
+	TransformationMatrix* instancingData = nullptr;
+	instancingResource->Map(0, nullptr, reinterpret_cast<void**>(&instancingData));
+
+	//単位行列を書き込んでおく
+	for (uint32_t index = 0; index < kNumInstance; ++index) {
+
+		instancingData[index].WVP = MakeIdentity4x4();
+		instancingData[index].World = MakeIdentity4x4();
+
+	}
+
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC instancingSrvDesc{};
+	instancingSrvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	instancingSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	instancingSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+	instancingSrvDesc.Buffer.FirstElement = 0;
+	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+	instancingSrvDesc.Buffer.NumElements = kNumInstance;
+	instancingSrvDesc.Buffer.StructureByteStride = sizeof(TransformationMatrix);
+	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = GetCPUDescriptorHandle(srvDescriptorHeap, desriptorSizeSRV, 3);
+	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap, desriptorSizeSRV, 3);
+	device->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
+
+	Transform transform[kNumInstance];
+	for (uint32_t index = 0; index < kNumInstance; ++index) {
+		transform[index].scale = { 1.0f,1.0f,1.0f };
+
+	}
 
 
 
 
 
 
-	////描画先のRTVを設定
-	//commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
-	////指定した色で画面全体をクリアする
-	//float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色RGBAの順
-	//commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
-
-
-
-
-
-	////画面に描く処理はすべて終わり、画面に映すので、状態を遷移
-	////今回はRenderTargetからPresentにする
-
-
-	//barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	//barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-	////TransitionBarrierを張る
-	//commandList->ResourceBarrier(1, &barrier);
-
-
-
-
+		////これから書き込むバックバッファのインデックスを取得
+		//UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+		////TransitionBarrierの設定
+		//D3D12_RESOURCE_BARRIER barrier{};
+		////今回のバリアはTransition
+		//barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		////Noneにしておく
+		//barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		////バリアを張る対象のリソース。現在のバックバッファに対して行う
+		//barrier.Transition.pResource = swapChainResources[backBufferIndex];
+		////遷移前(現在）のResourceState
+		//barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+		////遷移後のResourceState
+		//barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		////TransitionBarrierを張る
+		//commandList->ResourceBarrier(1, &barrier);
 
 
 
 
 
 
-
-
-	//
-	////コマンドリストの内容を確定させる。すべてのコマンドを積んでからcloseすること
-	//hr = commandList->Close();
-	//assert(SUCCEEDED(hr));
-
-	////GPUにコマンドリストの実行を行わせる
-	//ID3D12CommandList* commandLists[] = { commandList };
-	//commandQueue->ExecuteCommandLists(1, commandLists);
-
-	////GPUとOSに画面交換を行うよう通知する
-	//swapChain->Present(1, 0);
-
-	//
+		////描画先のRTVを設定
+		//commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
+		////指定した色で画面全体をクリアする
+		//float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色RGBAの順
+		//commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 
 
 
-	//初期値０でFenceを作る
-	ID3D12Fence* fence = nullptr;
+
+
+		////画面に描く処理はすべて終わり、画面に映すので、状態を遷移
+		////今回はRenderTargetからPresentにする
+
+
+		//barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		//barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+		////TransitionBarrierを張る
+		//commandList->ResourceBarrier(1, &barrier);
+
+
+
+
+
+
+
+
+
+
+
+
+		//
+		////コマンドリストの内容を確定させる。すべてのコマンドを積んでからcloseすること
+		//hr = commandList->Close();
+		//assert(SUCCEEDED(hr));
+
+		////GPUにコマンドリストの実行を行わせる
+		//ID3D12CommandList* commandLists[] = { commandList };
+		//commandQueue->ExecuteCommandLists(1, commandLists);
+
+		////GPUとOSに画面交換を行うよう通知する
+		//swapChain->Present(1, 0);
+
+		//
+
+
+
+		//初期値０でFenceを作る
+		ID3D12Fence * fence = nullptr;
 	uint64_t fenceValue = 0;
 	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 	assert(SUCCEEDED(hr));
@@ -803,18 +872,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;//SRVを使う
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;//offsetを自動計算
 
+
+
+
+	//追加
+	D3D12_DESCRIPTOR_RANGE descriptorRangeForInstancing[1] = {};
+	descriptorRangeForInstancing[0].BaseShaderRegister = 0;//0から始まる
+	descriptorRangeForInstancing[0].NumDescriptors = 1;//数は１つ
+	descriptorRangeForInstancing[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;//SRVを使う
+	descriptorRangeForInstancing[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;//offsetを自動計算
+
+
+
+
+
 	//RootParameter作成。複数設定出来るので配列。今回は結果が一つだけなので長さ１の配列
 	D3D12_ROOT_PARAMETER rootParameters[3] = {};
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderで使う
 	rootParameters[0].Descriptor.ShaderRegister = 0;//レジスタ番号０とバインド
+
 	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを使う
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;//VertexShaderを使う
 	rootParameters[1].Descriptor.ShaderRegister = 0;//レジスタ番号０を使う
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;//DescriptorTableを使う
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderを使う
-	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;//Tableの中身の配列を指定
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);//Tableで利用する数
+
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;//DescriptorTableを使う
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;//VertexShaderで使う
+	rootParameters[1].DescriptorTable.pDescriptorRanges = descriptorRangeForInstancing;//Tableの中身の配列を指定
+	rootParameters[1].DescriptorTable.NumDescriptorRanges = _countof(descriptorRangeForInstancing);//Tableで利用する数
 	descriptionRootSignature.pParameters = rootParameters;//ルートパラメータ配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters);//配列の長さ
 
