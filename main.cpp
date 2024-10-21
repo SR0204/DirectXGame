@@ -1134,8 +1134,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 
-	//入力解放
-	delete input;
+	
 
 
 	MSG msg{};
@@ -1353,6 +1352,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	device->Release();
 	useAdapter->Release();
 	dxgiFactory->Release();
+
+	//入力解放
+	delete input;
+
 #ifdef _DEBUG
 	debugController->Release();
 #endif
