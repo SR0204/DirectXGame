@@ -66,6 +66,14 @@ bool Input::PushKey(BYTE keyNumber)
 		return true;
 	}
 
+	//座標操作
+	/*if (key[DIK_UP] || key[DIK_DOWN] || key[DIK_RIGHT] || key[DIK_LEFT]) {
+
+		if (key[DIK_UP]) { vertexDataSprite.position.y += 1.0f; }
+
+	}*/
+
+
 
 	return false;
 }

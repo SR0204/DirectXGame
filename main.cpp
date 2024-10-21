@@ -1,4 +1,4 @@
-#define DIRECTINPUT_VERSION 0x0800
+
 #include<Windows.h>
 #include<cstdint>
 #include<string>
@@ -16,7 +16,6 @@
 #include"externals/DirectXTex/DirectXTex.h"
 #include<fstream>
 #include<sstream>
-#include<dinput.h>
 #include"Input.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -24,8 +23,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"dxcompiler.lib")
-#pragma comment(lib,"dinput8.lib")
-#pragma comment(lib,"dxguid.lib")
+
 
 struct Vector4 {
 	float x;
@@ -1158,8 +1156,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 			}
 
-
-
+			
+			
 
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
