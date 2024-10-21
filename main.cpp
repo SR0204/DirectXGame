@@ -486,8 +486,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	input = new Input();
 	input->Initialize(wc.hInstance, hwnd);
 
-	//入力の更新
-	input->Update();
+	
 
 	
 
@@ -1145,7 +1144,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 		}
 		else {
 
-			
+			//入力の更新
+			input->Update();
+
 
 			//数字の0キーが押されていたら
 			//if (key[DIK_0]) {
