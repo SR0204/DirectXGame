@@ -24,10 +24,17 @@ public:
 	template<class T>using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 
+	bool PushKey(BYTE keyNumber);
+
+	//全キーの状態
+	BYTE key[256] = {};
+
+
 private:
 
 	//キーボードのデバイス
 	ComPtr<IDirectInputDevice8>keyboard;
+
 
 };
 

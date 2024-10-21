@@ -1152,11 +1152,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			
 
 			//数字の0キーが押されていたら
-			//if (key[DIK_0]) {
+			if (input->PushKey(DIK_0)) {
 
-			//	OutputDebugStringA("Hit 0/n");//出力ウィンドウに[Hit 0]と表示
+				OutputDebugStringA("Hit 0/n");//出力ウィンドウに[Hit 0]と表示
 
-			//}
+			}
 
 
 
