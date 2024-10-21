@@ -482,7 +482,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	ShowWindow(hwnd, SW_SHOW);
 
 
-
 	//ポインタ
 	Input* input = nullptr;
 
@@ -490,8 +489,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	input = new Input();
 	input->Initialize(wc.hInstance, hwnd);
 
-	//入力解放
-	delete input;
+	
+	
 
 
 	IDXGIFactory7* dxgiFactory = nullptr;
@@ -1133,6 +1132,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 
+
+
+	//入力解放
+	delete input;
 
 
 	MSG msg{};

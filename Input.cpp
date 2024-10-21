@@ -3,7 +3,7 @@
 #include<cassert>
 #include<wrl.h>
 #include<dinput.h>
-
+#include<Windows.h>
 
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
@@ -27,7 +27,7 @@ void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 
 
 	//キーボードデバイスの生成
-	IDirectInputDevice8* keyboard = nullptr;
+	ComPtr<IDirectInputDevice8> keyboard;
 	result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
 	assert(SUCCEEDED(result));
 
