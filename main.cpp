@@ -493,8 +493,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//入力の更新
 	input->Update();
 
-	//入力解放
-	delete input;
+	
 
 
 
@@ -1138,6 +1137,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 
+
+	//入力解放
+	delete input;
 
 
 	MSG msg{};
