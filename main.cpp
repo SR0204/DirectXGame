@@ -1138,8 +1138,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 
 
-	//入力解放
-	delete input;
+	
 
 
 	MSG msg{};
@@ -1352,6 +1351,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	device->Release();
 	useAdapter->Release();
 	dxgiFactory->Release();
+
+	//入力解放
+	delete input;
+
+
 #ifdef _DEBUG
 	debugController->Release();
 #endif
