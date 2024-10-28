@@ -1,4 +1,3 @@
-
 #include<Windows.h>
 #include<cstdint>
 #include<string>
@@ -10,13 +9,13 @@
 #include<dxcapi.h>
 #include"externals/imgui/imgui.h"
 #include"externals/imgui/imgui_impl_dx12.h"
-#include"externals/imgui/imgui_impl_win32.h"
 #include"Matrix.h"
 #include"Transform.h"
 #include"externals/DirectXTex/DirectXTex.h"
 #include<fstream>
 #include<sstream>
 #include"Input.h"
+#include"WinApp.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #pragma comment(lib,"d3d12.lib")
@@ -392,12 +391,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//ポインタ
 	Input* input = nullptr;
 
+	WinApp* winApp = nullptr;
+
 	//入力の初期化
 	input = new Input();
 	input->Initialize(wc.hInstance, hwnd);
 
-
-
+	//ウィンドウの初期化
+	winApp = new WinApp();
+	winApp->Initialize();
 
 
 
@@ -1294,6 +1296,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//入力解放
 	delete input;
 
+	delete winApp;
 
 #ifdef _DEBUG
 	debugController->Release();
