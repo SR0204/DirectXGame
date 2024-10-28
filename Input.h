@@ -1,6 +1,5 @@
-#define DIRECTINPUT_VERTION 0x0800
-
 #pragma once
+#define DIRECTINPUT_VERTION 0x0800
 
 #include<Windows.h>
 #include<wrl.h>
