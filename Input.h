@@ -1,6 +1,5 @@
-#define DIRECTINPUT_VERTION 0x0800
-
 #pragma once
+#define DIRECTINPUT_VERTION 0x0800
 
 #include<Windows.h>
 #include<wrl.h>
@@ -26,7 +25,7 @@ public:
 
 	bool PushKey(BYTE keyNumber);
 
-
+	bool TriggerKey(BYTE keyNumber);
 
 
 private:
@@ -37,5 +36,9 @@ private:
 	//全キーの状態
 	BYTE key[256] = {};
 
+	BYTE keyPre[256] = {};
+
+	//DirectInputのインスタンス
+	ComPtr<IDirectInput8>directInput;
 };
 

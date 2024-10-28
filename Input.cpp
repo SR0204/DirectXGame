@@ -3,7 +3,7 @@
 #include<cassert>
 //#include<wrl.h>
 //#include<dinput.h>
-
+#include"Transform.h"
 
 
 
@@ -47,6 +47,9 @@ void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 void Input::Update()
 {
 
+	//前回のキー入力を保存
+	memcpy(keyPre, key, sizeof(key));
+
 	//キーボード情報の取得開始
 	keyboard->Acquire();
 
@@ -66,14 +69,27 @@ bool Input::PushKey(BYTE keyNumber)
 		return true;
 	}
 
+	return false;
+
 	//座標操作
 	/*if (key[DIK_UP] || key[DIK_DOWN] || key[DIK_RIGHT] || key[DIK_LEFT]) {
 
-		if (key[DIK_UP]) { vertexDataSprite.position.y += 1.0f; }
+		if (key[DIK_UP]) {}
 
 	}*/
 
 
+
+
+}
+
+bool Input::TriggerKey(BYTE keyNumber)
+{
+
+	if (key[keyNumber] != 0 && keyPre[keyNumber] == 0) {
+
+		return true;
+	}
 
 	return false;
 }

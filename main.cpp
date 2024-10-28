@@ -173,7 +173,7 @@ IDxcBlob* CompileShader(
 }
 
 //Resource作成の関数化
-ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes)
+Microsoft::WRL::ComPtr<ID3D12Resource>CreateBufferResource(ID3D12Device* device, size_t sizeInBytes)
 {
 	//頂点リソース用のヒープの設定
 	D3D12_HEAP_PROPERTIES uploadHeapProperties{};
@@ -233,7 +233,7 @@ DirectX::ScratchImage LoadTexture(const std::string& filePath)
 }
 
 //CreateTextureResourceを作成する
-ID3D12Resource* CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata)
+Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata)
 {
 	//metadataを基にResourceの設定
 	D3D12_RESOURCE_DESC resourceDesc{};
@@ -286,7 +286,7 @@ void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mip
 	}
 }
 
-ID3D12Resource* CreateDepthStencilTextureResource(ID3D12Device* device, int32_t width, int32_t height)
+Microsoft::WRL::ComPtr<ID3D12Resource>CreateDepthStencilTextureResource(ID3D12Device* device, int32_t width, int32_t height)
 {
 	//生成するResourceの設定
 	D3D12_RESOURCE_DESC resourceDesc{};
@@ -475,7 +475,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 #endif
 
 
-	
+
 
 	ShowWindow(hwnd, SW_SHOW);
 
@@ -488,10 +488,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	input = new Input();
 	input->Initialize(wc.hInstance, hwnd);
 
-	//入力の更新
-	input->Update();
-
 	
+
+
 
 
 
@@ -857,14 +856,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	ID3D12DescriptorHeap* dsvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
 
 	//DepthStencilTextureをウィンドウのサイズで作成
-	ID3D12Resource* depthStencilResource = CreateDepthStencilTextureResource(device, kCLientWidth, kCLientHeight);
+	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource = CreateDepthStencilTextureResource(device, kCLientWidth, kCLientHeight);
 
 	//DSVの設定
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//Format。基本的にはResourceに合わせる
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;//2dTexture
 	//DESVHeapの先頭にDSVをつくる
-	device->CreateDepthStencilView(depthStencilResource, &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	device->CreateDepthStencilView(depthStencilResource.Get(), &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
 	//DepthStencilStateの設定
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
@@ -891,7 +890,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//頂点リソース用のヒープ設定
 	D3D12_HEAP_PROPERTIES uploadHeapProoerties{};
 	uploadHeapProoerties.Type = D3D12_HEAP_TYPE_UPLOAD;//UploadHeapを使う
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelDate.vertices.size());
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelDate.vertices.size());
 
 
 
@@ -934,12 +933,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	////1頂点当たりのサイズ
 	//vertexBufferView.StrideInBytes = sizeof(VertexData);
 	//マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する
-	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Vector4));//ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Vector4));
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = CreateBufferResource(device, sizeof(Vector4));//ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Vector4));
 
 	//wvp用のリソースを作る。今回はMatrix4x4  1つ分のサイズを用意する
-	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(Matrix4x4));
+	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource = CreateBufferResource(device, sizeof(Matrix4x4));
 
-	ID3D12Resource* indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
 
 	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
 	//リソースの先頭のアドレスから使う
@@ -1012,7 +1011,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 	//Sprite用の頂点リソースを作る
-	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
 
 	//頂点バッファービューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
@@ -1048,7 +1047,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 	//Sprite用のTransformationMatrix用のリソースを作る
-	ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(Matrix4x4));
+	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(Matrix4x4));
 
 	//データを書き込む
 	Matrix4x4* transformationMatrixDataSprite = nullptr;
@@ -1104,8 +1103,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//Textureを読んで転送する
 	DirectX::ScratchImage mipImages = LoadTexture("Resources/uvChecker.png");
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
-	ID3D12Resource* textureResource = CreateTextureResource(device, metadata);
-	UploadTextureData(textureResource, mipImages);
+	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = CreateTextureResource(device, metadata);
+	UploadTextureData(textureResource.Get(), mipImages);
 
 	//metadataを基にSRVの設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -1123,7 +1122,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	textureSrvHandleGPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	//SRVの設定
-	device->CreateShaderResourceView(textureResource, &srvDesc, textureSrvHandleCPU);
+	device->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
 
 
 
@@ -1136,7 +1135,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 
 
-	
+
 
 
 	MSG msg{};
@@ -1147,17 +1146,51 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 		}
 		else {
 
-			
+
 
 			//数字の0キーが押されていたら
-			if (input->PushKey(DIK_0)) {
+			if (input->TriggerKey(DIK_0)) {
 
 				OutputDebugStringA("Hit 0/n");//出力ウィンドウに[Hit 0]と表示
 
 			}
 
-			
-			
+
+
+
+
+			//座標移動
+
+			//入力の更新
+			input->Update();			
+
+
+			//上下キーを単押しでしか動けない
+			if (input->TriggerKey(DIK_UP)) {
+
+				transform.translate.y += 0.01f;
+
+			}
+
+			if (input->TriggerKey(DIK_DOWN)) {
+
+				transform.translate.y -= 0.01f;
+
+			}
+
+			//左右キーを長押しで動く
+			if (input->PushKey(DIK_RIGHT)) {
+
+				transform.translate.x += 0.01f;
+
+			}
+
+			if (input->PushKey(DIK_LEFT)) {
+
+				transform.translate.x -= 0.01f;
+
+			}
+
 
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
@@ -1182,7 +1215,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 			ImGui::End();
 
-			transform.rotate.y += 0.03f;
+			//transform.rotate.y += 0.03f;
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			*wvpData = worldMatrix;
 
