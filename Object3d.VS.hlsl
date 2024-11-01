@@ -1,4 +1,3 @@
-
 #include"object3d.hlsli"
 struct TransformationMatrix
 {
@@ -23,3 +22,5 @@ VertexShaderOutput main(VertexShaderInput input)
     output.texcoord = input.texcoord;
     return output;
 }
+
+

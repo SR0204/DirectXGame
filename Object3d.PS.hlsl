@@ -1,4 +1,3 @@
-
 #include"object3d.hlsli"
 struct Pixelshaderoutput
 {
@@ -33,3 +32,11 @@ Pixelshaderoutput main(VertexShaderOutput input)
 	
     return output;
 }
+
+
+
+
+
+
+
+
