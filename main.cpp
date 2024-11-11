@@ -15,7 +15,9 @@
 #include<fstream>
 #include<sstream>
 #include"Input.h"
-#include"WinApp.cpp"
+#include"WinApp.h"
+#include "externals/imgui/imgui_impl_win32.h"
+
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #pragma comment(lib,"d3d12.lib")
@@ -517,8 +519,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//スワップチェーンを生成する
 	IDXGISwapChain4* swapChain = nullptr;
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
-	swapChainDesc.Width = kCLientWidth;//画面の幅、ウィンドウのクライアント領域を同じものにしておく
-	swapChainDesc.Height = kCLientHeight;//画面の高さ、ウィンドウのクライアント領域を同じものにしておく
+	swapChainDesc.Width =WinApp::kCLientWidth;//画面の幅、ウィンドウのクライアント領域を同じものにしておく
+	swapChainDesc.Height = WinApp::kCLientHeight;//画面の高さ、ウィンドウのクライアント領域を同じものにしておく
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;//色の形式
 	swapChainDesc.SampleDesc.Count = 1;//マルチサンプルしない
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;//描画のターゲットとして利用する
@@ -766,7 +768,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	ID3D12DescriptorHeap* dsvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
 
 	//DepthStencilTextureをウィンドウのサイズで作成
-	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource = CreateDepthStencilTextureResource(device, kCLientWidth, kCLientHeight);
+	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource = CreateDepthStencilTextureResource(device, WinApp::kCLientWidth, WinApp::kCLientHeight);
 
 	//DSVの設定
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
@@ -978,8 +980,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//ビューポート
 	D3D12_VIEWPORT viewport{};
 	//クライアント領域	のサイズと一緒にして画面全体表示
-	viewport.Width = kCLientWidth;
-	viewport.Height = kCLientHeight;
+	viewport.Width = WinApp::kCLientWidth;
+	viewport.Height = WinApp::kCLientHeight;
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.MinDepth = 0.0f;
@@ -989,9 +991,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	D3D12_RECT scissorRect{};
 	//基本的にビューポートと同じ字形が構成される
 	scissorRect.left = 0;
-	scissorRect.right = kCLientWidth;
+	scissorRect.right = WinApp::kCLientWidth;
 	scissorRect.top = 0;
-	scissorRect.bottom = kCLientHeight;
+	scissorRect.bottom = WinApp::kCLientHeight;
 
 	//ImGuiの初期化。
 	IMGUI_CHECKVERSION();
@@ -1132,14 +1134,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			//WVPMatrixを作成して設定する
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameratransform.scale, cameratransform.rotate, cameratransform.translate);
 			Matrix4x4 viewMatrix = Invers(cameraMatrix);
-			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kCLientWidth) / float(kCLientHeight), 0.1f, 100.0f);
+			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kCLientWidth) / float(WinApp::kCLientHeight), 0.1f, 100.0f);
 			Matrix4x4 worldViewprojectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 			*transformationMatrixData = worldViewprojectionMatrix;
 
 			//Sprite用のWorldViewProjectionMatrixを作る
 			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
 			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
-			Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(kCLientWidth), float(kCLientHeight), 0.0f, 100.0f);
+			Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(WinApp::kCLientWidth), float(WinApp::kCLientHeight), 0.0f, 100.0f);
 			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
 			*transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
 

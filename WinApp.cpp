@@ -1,10 +1,12 @@
 #include "WinApp.h"
 #include<cmath>
-#include "externals/imgui/imgui_impl_win32.cpp"
+#include "externals/imgui/imgui.h"
+#include"Windows.h"
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 //ウィンドウプロシージャ
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+LRESULT CALLBACK WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam))
 	{
@@ -32,20 +34,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 void WinApp::Initialize()
 {
 
-	CoInitializeEx(0, COINIT_MULTITHREADED);
-
-
-	const int32_t kCLientWidth = 1280;
-	const int32_t kCLientHeight = 720;
-
-	RECT wrc = { 0,0,kCLientWidth,kCLientHeight };
-
-	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
-
-
-
-	//出力ウィンドウへの文字出力
-	OutputDebugStringA("Hello,DirectX!\n");
+	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
 
 	WNDCLASS wc{};
 	//ウィンドウプロシージャ
@@ -63,8 +52,23 @@ void WinApp::Initialize()
 	//ウィンドウクラスを登録する
 	RegisterClass(&wc);
 
+	/*const int32_t kCLientWidth = 1280;
+	const int32_t kCLientHeight = 720;*/
+
+	RECT wrc = { 0,0,kCLientWidth,kCLientHeight };
+
+	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
+
+
+
+	//出力ウィンドウへの文字出力
+	//OutputDebugStringA("Hello,DirectX!\n");
+
+
+
+
 	//ウィンドウの生成
-	HWND hwnd = CreateWindow(
+	/*HWND hwnd = CreateWindow(
 		wc.lpszClassName,
 		L"CG2",
 		WS_OVERLAPPEDWINDOW,
@@ -76,7 +80,8 @@ void WinApp::Initialize()
 		nullptr,
 		wc.hInstance,
 		nullptr
-	);
+	);*/
+
 	//#ifdef DEBUG
 	//	ID3D12Debug1* debugController = nullptr;
 	//	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
