@@ -4,7 +4,7 @@
 //#include<wrl.h>
 //#include<dinput.h>
 #include"Transform.h"
-
+#include"WinApp.h"
 
 
 //using namespace Microsoft::WRL;
