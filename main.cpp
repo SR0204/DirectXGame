@@ -15,7 +15,6 @@
 #include<fstream>
 #include<sstream>
 #include"Input.h"
-#include"WinApp.h"
 #include "externals/imgui/imgui_impl_win32.h"
 
 
@@ -449,16 +448,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 	Log("Complete create D3D12Device!!!\n");
 
-	//#ifdef _DEBUG
-	//	ID3D12Debug1* debugController = nullptr;
-	//	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
-	//		//デバックレイヤーを有効化する
-	//		debugController->EnableDebugLayer();
-	//		//さらにGPU側でもチェックを行うようにする
-	//		debugController->SetEnableGPUBasedValidation(TRUE);
-	//	}
-	//
-	//#endif
+	#ifdef _DEBUG
+		ID3D12Debug1* debugController = nullptr;
+		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
+			//デバックレイヤーを有効化する
+			debugController->EnableDebugLayer();
+			//さらにGPU側でもチェックを行うようにする
+			debugController->SetEnableGPUBasedValidation(TRUE);
+		}
+	
+	#endif
 
 
 
@@ -1302,9 +1301,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 
-#ifdef _DEBUG
-	debugController->Release();
-#endif
+//#ifdef _DEBUG
+//	debugController->Release();
+//#endif
 
 
 	vertexResource->Release();
