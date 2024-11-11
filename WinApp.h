@@ -16,13 +16,17 @@ public:
 	//更新
 	void Update();
 
+	//getter
+	HWND GetHwnd()const { return hwnd; }
+
+	//getter
+	HINSTANCE GetHInstance()const { return wc.hInstance; }
 
 private:
 
 	//ウィンドウタイトル
 	HWND hwnd = nullptr;
 
-	//getter
-	HWND GetHwnd()const { return hwnd; }
+	WNDCLASS wc{};
 };
 
