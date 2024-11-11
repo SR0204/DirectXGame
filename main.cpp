@@ -15,7 +15,7 @@
 #include<fstream>
 #include<sstream>
 #include"Input.h"
-#include"WinApp.h"
+#include"WinApp.cpp"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #pragma comment(lib,"d3d12.lib")
