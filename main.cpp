@@ -1296,14 +1296,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	useAdapter->Release();
 	dxgiFactory->Release();
 
-	//入力解放
-	delete input;
+	
+	
 
 
-
-//#ifdef _DEBUG
-//	debugController->Release();
-//#endif
+#ifdef _DEBUG
+	debugController->Release();
+#endif
 
 
 	vertexResource->Release();
@@ -1333,8 +1332,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//WindowsAPI
 	winApp->Finalize();
 
+	//入力解放
+	delete input;
+
 	delete winApp;
-	winApp = nullptr;
+	//winApp = nullptr;
 
 	return 0;
 }
