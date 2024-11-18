@@ -41,8 +41,6 @@ void Input::Initialize(WinApp* winApp)
 	);
 	assert(SUCCEEDED(result));
 
-	
-
 }
 
 

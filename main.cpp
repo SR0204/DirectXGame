@@ -385,26 +385,29 @@ ModelDate LoadObjFile(const std::string& directoryPath, const std::string& filen
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
-
-
-
-
 	//ポインタ
 	Input* input = nullptr;
 
 	WinApp* winApp = nullptr;
 
-	//入力の初期化
-	input = new Input();
-	input->Initialize(winApp);
-
 	//ウィンドウの初期化
 	winApp = new WinApp();
 	winApp->Initialize();
 
+	//入力の初期化
+	input = new Input();
+	input->Initialize(winApp);
 
+#ifdef _DEBUG
+	ID3D12Debug1* debugController = nullptr;
+	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
+		//デバックレイヤーを有効化する
+		debugController->EnableDebugLayer();
+		//さらにGPU側でもチェックを行うようにする
+		debugController->SetEnableGPUBasedValidation(TRUE);
+	}
 
-
+#endif
 
 	IDXGIFactory7* dxgiFactory = nullptr;
 
@@ -448,20 +451,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 	Log("Complete create D3D12Device!!!\n");
 
-	#ifdef _DEBUG
-		ID3D12Debug1* debugController = nullptr;
-		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
-			//デバックレイヤーを有効化する
-			debugController->EnableDebugLayer();
-			//さらにGPU側でもチェックを行うようにする
-			debugController->SetEnableGPUBasedValidation(TRUE);
-		}
-	
-	#endif
 
 
 
-#ifdef _DEBUG
+
+
 	ID3D12InfoQueue* infoQueue = nullptr;
 	if (SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&infoQueue)))) {
 		//ヤバイエラー時に止まる
@@ -490,7 +484,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 		infoQueue->PushStorageFilter(&filter);
 
 	}
-#endif
+
 
 
 
@@ -1059,18 +1053,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			break;
 		}
 
-
-
-		//数字の0キーが押されていたら
-		if (input->TriggerKey(DIK_0)) {
-
-			OutputDebugStringA("Hit 0/n");//出力ウィンドウに[Hit 0]と表示
-
-		}
-
-
-
-
+		ImGui_ImplDX12_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+		//開発用UIの処理。実際に開発用のUIをを出す場合はここをゲーム固有の処理に置き換える
+		//ImGui::ShowDemoWindow();
 
 		//座標移動
 
@@ -1105,11 +1092,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 		}
 
 
-		ImGui_ImplDX12_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
-		//開発用UIの処理。実際に開発用のUIをを出す場合はここをゲーム固有の処理に置き換える
-		//ImGui::ShowDemoWindow();
+
 
 		//選択して色が変えられる
 		ImGui::Begin("Window");
@@ -1125,12 +1108,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 		ImGui::DragFloat3("rotate2", &transformSprite.rotate.x, 0.01f);
 		ImGui::DragFloat3("ModelScale2", &transformSprite.scale.x, 0.01f);
 		ImGui::DragFloat3("ModelTransform2", &transformSprite.translate.x, 0.01f);
-
 		ImGui::End();
 
 		//transform.rotate.y += 0.03f;
 		Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 		*wvpData = worldMatrix;
+
+
+
+
 
 		//WVPMatrixを作成して設定する
 		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameratransform.scale, cameratransform.rotate, cameratransform.translate);
@@ -1199,18 +1185,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 		commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 		commandList->DrawInstanced(UINT(modelDate.vertices.size()), 1, 0, 0);
-
-
-
-
-
-
-
-
-
-
-
-
 
 		//ImGuiの内部コマンドを生成する
 		ImGui::Render();
@@ -1296,8 +1270,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	useAdapter->Release();
 	dxgiFactory->Release();
 
-	
-	
+
+
 
 
 #ifdef _DEBUG
@@ -1315,6 +1289,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	pixelShaderBlob->Release();
 	vertexShaderBlob->Release();
 
+
+
+
 	//ImGuiの終了処理。
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
@@ -1329,6 +1306,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 		debug->Release();
 	}
 
+
 	//WindowsAPI
 	winApp->Finalize();
 
@@ -1336,7 +1314,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	delete input;
 
 	delete winApp;
-	//winApp = nullptr;
+	winApp = nullptr;
 
 	return 0;
 }

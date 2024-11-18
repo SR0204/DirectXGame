@@ -34,9 +34,9 @@ LRESULT CALLBACK WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM l
 void WinApp::Initialize()
 {
 
-	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
+	CoInitializeEx(0, COINIT_MULTITHREADED);
 
-	
+
 
 	//ウィンドウプロシージャ
 	wc.lpfnWndProc = WindowProc;
@@ -69,7 +69,7 @@ void WinApp::Initialize()
 
 
 	//ウィンドウの生成
-	/*HWND hwnd = CreateWindow(
+	hwnd = CreateWindow(
 		wc.lpszClassName,
 		L"CG2",
 		WS_OVERLAPPEDWINDOW,
@@ -81,7 +81,7 @@ void WinApp::Initialize()
 		nullptr,
 		wc.hInstance,
 		nullptr
-	);*/
+	);
 
 	//#ifdef DEBUG
 	//	ID3D12Debug1* debugController = nullptr;
@@ -100,12 +100,7 @@ void WinApp::Initialize()
 
 }
 
-void WinApp::Update()
-{
 
-
-
-}
 
 void WinApp::Finalize()
 {
@@ -124,7 +119,7 @@ bool WinApp::ProcessMessage()
 		DispatchMessage(&msg);
 	}
 
-	if (msg.message != WM_QUIT) {
+	if (msg.message == WM_QUIT) {
 
 		return true;
 	}
