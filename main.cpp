@@ -16,6 +16,7 @@
 #include<sstream>
 #include"Input.h"
 #include "externals/imgui/imgui_impl_win32.h"
+#include"DirectXCommon.h"
 
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -390,6 +391,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 	WinApp* winApp = nullptr;
 
+	DirectXCommon* dxCommon = nullptr;
+
 	//ウィンドウの初期化
 	winApp = new WinApp();
 	winApp->Initialize();
@@ -397,6 +400,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//入力の初期化
 	input = new Input();
 	input->Initialize(winApp);
+
+	//DirectXの初期化
+	dxCommon = new DirectXCommon();
+	dxCommon->Initialize();
 
 #ifdef _DEBUG
 	ID3D12Debug1* debugController = nullptr;
@@ -1315,6 +1322,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	delete input;
 
 	delete winApp;
+	
+	delete dxCommon;
+
 	winApp = nullptr;
 
 	return 0;
