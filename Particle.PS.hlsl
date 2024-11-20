@@ -33,11 +33,3 @@ Pixelshaderoutput main(VertexShaderOutput input)
 
     return output;
 }
-
-
-
-
-
-
-
-
