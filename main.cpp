@@ -476,28 +476,9 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 			//基本的にObjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す
 			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);
 		}
-
-
-
-
-
-
-
-
-
 	}
 	return modelData;
 }
-
-
-
-
-
-
-
-
-
-
 
 
 //Windowsアプリでのエントリーポイント(main関数)
@@ -568,11 +549,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	}
 
 #endif
-
-
-
-
-
 
 
 	ShowWindow(hwnd, SW_SHOW);
@@ -1490,8 +1466,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 		debug->Release();
 	}
 
+	instancingResource->Release();
+
 	//終了処理
 	CoUninitialize();
+
+
 
 	return 0;
 }
