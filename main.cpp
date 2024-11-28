@@ -1,4 +1,3 @@
-
 #include<Windows.h>
 #include<cstdint>
 #include<string>
@@ -764,8 +763,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 
-	////画面に描く処理はすべて終わり、画面に映すので、状態を遷移
-	////今回はRenderTargetからPresentにする
+	//画面に描く処理はすべて終わり、画面に映すので、状態を遷移
+	//今回はRenderTargetからPresentにする
 
 
 	//barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -784,7 +783,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 
-	//
+	
 	////コマンドリストの内容を確定させる。すべてのコマンドを積んでからcloseすること
 	//hr = commandList->Close();
 	//assert(SUCCEEDED(hr));
@@ -1013,7 +1012,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	uploadHeapProoerties.Type = D3D12_HEAP_TYPE_UPLOAD;//UploadHeapを使う
 
 	//モデル読み込み
-	ModelData modelData = LoadObjFile("resources", "plane.obj");//plane.obj
+	ModelData modelData = LoadObjFile("Resources/model", "plane.obj");//plane.obj
 
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 	//頂点バッファビューを作成する
@@ -1381,7 +1380,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			//commandList->DrawInstanced(3, 1, 0, 0);
 			//commandList->DrawInstanced(6, 1, 0, 0);
 			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumInstance, 0, 0);
-
+				
 
 
 			//Spriteの描画。変更が必要なものだけ変更する
