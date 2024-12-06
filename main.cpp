@@ -541,7 +541,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//ウィンドウの生成
 	HWND hwnd = CreateWindow(
 		wc.lpszClassName,
-		L"CG2",
+		L"LE2C_12_Suzuki_Reo",
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
@@ -787,7 +787,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 
-	
+
 	////コマンドリストの内容を確定させる。すべてのコマンドを積んでからcloseすること
 	//hr = commandList->Close();
 	//assert(SUCCEEDED(hr));
@@ -1272,9 +1272,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	Particle particles[kNumInstance];
 	for (uint32_t index = 0; index < kNumInstance; ++index)
 	{
-		/*particles[index].scale = { 1.0f,1.0f,1.0f };
-		particles[index].rotate = { 0.0f,0.0f,0.0f };
-		particles[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };*/
+		particles[index].transform = { 1.0f,1.0f,1.0f };
+		particles[index].transform = { 0.0f,0.0f,0.0f };
+		particles[index].transform = { index * 0.1f,index * 0.1f,index * 0.1f };
 
 		//速度上向きに設定
 		particles[index].velocity = { 0.0f,1.0f,0.0f };
@@ -1283,8 +1283,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//Δtを定義。
 	const float kDeltaTime = 1.0f / 60.0f;
 
-	
+	//パーティクルを動かすやつ
+	bool useUpdate = true;
 
+
+	//メインループ
 	MSG msg{};
 	while (msg.message != WM_QUIT) {
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -1320,11 +1323,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			for (uint32_t index = 0; index < kNumInstance; ++index) {
 
 				Matrix4x4 worldMatrix =
-					MakeAffineMatrix(transforms[index].scale, transforms[index].rotate, transforms[index].translate);
+					MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
 				Matrix4x4 worldViewprojectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 				instancingData[index].WVP = worldViewprojectionMatrix;
 				instancingData[index].World = worldMatrix;
+
+				if (useUpdate == true)
+				{
+					 particles[index].transform.translate +=particles[index].velocity * kDeltaTime;
+				}
 			}
+
 
 
 			//これから書き込むバックバッファのインデックスを取得
@@ -1390,7 +1399,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			//commandList->DrawInstanced(3, 1, 0, 0);
 			//commandList->DrawInstanced(6, 1, 0, 0);
 			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumInstance, 0, 0);
-				
+
 
 
 			//Spriteの描画。変更が必要なものだけ変更する
