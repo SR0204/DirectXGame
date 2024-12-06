@@ -59,7 +59,11 @@ struct TransformationMatrix {
 };
 
 
+struct Particle {
 
+	Transform transform;
+	Vector3 velocity;
+};
 
 //ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
@@ -1265,14 +1269,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	device->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
 
 	//Transformの作成
-	Transform transforms[kNumInstance];
+	Particle particles[kNumInstance];
 	for (uint32_t index = 0; index < kNumInstance; ++index)
 	{
-		transforms[index].scale = { 1.0f,1.0f,1.0f };
-		transforms[index].rotate = { 0.0f,0.0f,0.0f };
-		transforms[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
+		/*particles[index].scale = { 1.0f,1.0f,1.0f };
+		particles[index].rotate = { 0.0f,0.0f,0.0f };
+		particles[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };*/
+
+		//速度上向きに設定
+		particles[index].velocity = { 0.0f,1.0f,0.0f };
 	}
 
+	//Δtを定義。
+	const float kDeltaTime = 1.0f / 60.0f;
+
+	
 
 	MSG msg{};
 	while (msg.message != WM_QUIT) {
@@ -1314,7 +1325,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 				instancingData[index].WVP = worldViewprojectionMatrix;
 				instancingData[index].World = worldMatrix;
 			}
-
 
 
 			//これから書き込むバックバッファのインデックスを取得
