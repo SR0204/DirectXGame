@@ -87,6 +87,10 @@ public:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetDSVCPUDescriptorHandle(uint32_t index);//DSV用
 	D3D12_GPU_DESCRIPTOR_HANDLE GetDSVGPUDescriptorHandle(uint32_t index);
 
+	//getter
+	ID3D12Device* GetDevice()const { return device.Get(); }
+	Microsoft::WRL::ComPtr < ID3D12GraphicsCommandList> GetCommandList()const { return commandList.Get(); }
+
 private:
 	HRESULT hr;
 
@@ -96,7 +100,7 @@ private:
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
 
 	//コマンドの初期化
-	
+
 
 	//DSV用のヒープでディスクリプタの数１。DSVはshader内で触るものではないので、ShaderVisibleはfalse
 
@@ -158,6 +162,8 @@ private:
 	UINT64 fenceValue = 0;
 
 	HANDLE fenceEvent;
+
+
 };
 
 
