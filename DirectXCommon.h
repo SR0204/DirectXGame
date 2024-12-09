@@ -23,7 +23,7 @@ public:
 		//Compilerに使用するProfile
 		const wchar_t* profile
 		//初期化で生成したものを３つ
-		);
+	);
 
 	//DescriptorHeapの作成関数
 	ID3D12DescriptorHeap* CreateDescriptorHeap(
@@ -34,6 +34,12 @@ public:
 	//初期化
 	void Initialize();
 
+	//描画前処理
+	void PreDraw();
+
+	//描画後処理
+	void PostDraw();
+private:
 	//デバイスの初期化
 	void DeviceInitialize();
 
@@ -70,6 +76,8 @@ public:
 	//ImGuiの初期化
 	void ImGuiInitialize();
 
+
+public:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);//SRV用
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
 
@@ -88,9 +96,7 @@ private:
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
 
 	//コマンドの初期化
-	Microsoft::WRL::ComPtr<ID3D12CommandQueue>commandQueue = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator>commandAllocator = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12CommandList>commandList = nullptr;
+	
 
 	//DSV用のヒープでディスクリプタの数１。DSVはshader内で触るものではないので、ShaderVisibleはfalse
 
@@ -140,6 +146,18 @@ private:
 	//RTVの設定
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 
+	//コマンドキューを生成する
+	Microsoft::WRL::ComPtr < ID3D12CommandQueue> commandQueue = nullptr;
+
+	//コマンドアロケータを生成する
+	Microsoft::WRL::ComPtr < ID3D12CommandAllocator> commandAllocator = nullptr;
+
+	//コマンドリストを生成する
+	Microsoft::WRL::ComPtr < ID3D12GraphicsCommandList> commandList = nullptr;
+
+	UINT64 fenceValue = 0;
+
+	HANDLE fenceEvent;
 };
 
 
