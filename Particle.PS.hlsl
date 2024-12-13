@@ -13,13 +13,14 @@ struct Material
 };
 ConstantBuffer<Material> gMaterial : register(b0);
 
+
 Pixelshaderoutput main(VertexShaderOutput input)
 {
     Pixelshaderoutput output;
     
     float4 transformedUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.color);
     float4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
-    output.color = gMaterial.color * textureColor;
+    output.color = gMaterial.color * textureColor * input.color;
     
 	//output.colorのa値が0の時にPixelを棄却
     if (output.color.a == 0.0)

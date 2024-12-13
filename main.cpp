@@ -17,12 +17,15 @@
 #include<sstream>
 #include<vector>
 #include<wrl.h>
+#include<random>
+
+
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"dxcompiler.lib")
-
+//構造体
 struct Vector4 {
 	float x;
 	float y;
@@ -56,14 +59,23 @@ struct TransformationMatrix {
 
 	Matrix4x4 WVP;
 	Matrix4x4 World;
+	Vector4 color;
 };
 
-
-struct Particle {
-
+struct Particle
+{
 	Transform transform;
 	Vector3 velocity;
+	Vector4 color;
 };
+
+struct ParticleForGPU {
+
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+	Vector4 color;
+};
+
 
 //ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
@@ -358,13 +370,6 @@ D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descrip
 }
 
 
-
-
-
-
-
-
-
 //mtlファイルを読む関数
 MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename)
 {
@@ -495,11 +500,28 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 
 
 
+//乱数生成器
+std::random_device seedGenerator;
+std::mt19937 randomEngine(seedGenerator());
 
 
+std::uniform_real_distribution<float>distribution(-1.0f, 1.0f);
 
+//色を変える
+std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
 
+Particle MakeNewParticle(std::mt19937& randomEngine)
+{
+	std::uniform_real_distribution<float>distribution(-1.0f, 1.0f);
+	Particle particle;
+	particle.transform.scale = { 1.0f,1.0f,1.0f };
+	particle.transform.rotate = { 0.0f,0.0f,0.0f };
+	particle.transform.translate = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
+	particle.velocity = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
+	particle.color = { distColor(randomEngine),distColor(randomEngine), distColor(randomEngine),1.0f };
+	return particle;
 
+}
 
 
 
@@ -541,7 +563,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//ウィンドウの生成
 	HWND hwnd = CreateWindow(
 		wc.lpszClassName,
-		L"LE2C_12_Suzuki_Reo",
+		L"CG2",
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
@@ -767,8 +789,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 
-	//画面に描く処理はすべて終わり、画面に映すので、状態を遷移
-	//今回はRenderTargetからPresentにする
+	////画面に描く処理はすべて終わり、画面に映すので、状態を遷移
+	////今回はRenderTargetからPresentにする
 
 
 	//barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -787,7 +809,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 
-
+	//
 	////コマンドリストの内容を確定させる。すべてのコマンドを積んでからcloseすること
 	//hr = commandList->Close();
 	//assert(SUCCEEDED(hr));
@@ -1142,10 +1164,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	*transformationMatrixDataSprite = MakeIdentity4x4();
 
 	//CPUで動かす用のTransform
-	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f}, {0.0f,0.0f,0.0f} };
+	Transform particlesprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f}, {0.0f,0.0f,0.0f} };
 
 	//Sprite用のWorldViewProjectionMatrixを作る
-	Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
+	Matrix4x4 worldMatrixSprite = MakeAffineMatrix(particlesprite.scale, particlesprite.rotate, particlesprite.translate);
 	Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
 	Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(kCLientWidth), float(kCLientHeight), 0.0f, 100.0f);
 	Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
@@ -1241,8 +1263,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//instancing用のResource作成
 	const uint32_t kNumInstance = 10;//インスタンス数
 	//Instancing用のTransformationMatrixリソースを作る
-	Microsoft::WRL::ComPtr<ID3D12Resource>instancingResource =
-		CreateBufferResource(device, sizeof(TransformationMatrix) * kNumInstance);
+	Microsoft::WRL::ComPtr<ID3D12Resource>instancingResource = CreateBufferResource(device, sizeof(ParticleForGPU) * kNumInstance);
+
 	//書き込むためのアドレスを取得
 	TransformationMatrix* instancingData = nullptr;
 	instancingResource->Map(0, nullptr, reinterpret_cast<void**>(&instancingData));
@@ -1251,6 +1273,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	{
 		instancingData[index].WVP = MakeIdentity4x4();
 		instancingData[index].World = MakeIdentity4x4();
+		instancingData[index].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);	
 	}
 
 	//SRVの作成
@@ -1263,28 +1286,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	instancingSrvDesc.Buffer.FirstElement = 0;
 	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 	instancingSrvDesc.Buffer.NumElements = kNumInstance;
-	instancingSrvDesc.Buffer.StructureByteStride = sizeof(TransformationMatrix);
+	instancingSrvDesc.Buffer.StructureByteStride = sizeof(ParticleForGPU);//TransformationMatrix
 	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = GetCPUDescriptorHandle(srvDescriptorHeap, desriptorSizeSRV, 3);
 	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap, desriptorSizeSRV, 3);
 	device->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
 
-	//Transformの作成
+	//Particleの作成
 	Particle particles[kNumInstance];
+
+
+
+	//乱数生成器 位置と速度を[-1,1]でランダムに初期化
 	for (uint32_t index = 0; index < kNumInstance; ++index)
 	{
-		particles[index].transform = { 1.0f,1.0f,1.0f };
-		particles[index].transform = { 0.0f,0.0f,0.0f };
-		particles[index].transform = { index * 0.1f,index * 0.1f,index * 0.1f };
+		particles[index] = MakeNewParticle(randomEngine);
 
-		//速度上向きに設定
-		particles[index].velocity = { 0.0f,1.0f,0.0f };
 	}
 
 	//Δtを定義。
 	const float kDeltaTime = 1.0f / 60.0f;
 
 	//パーティクルを動かすやつ
-	bool useUpdate = true;
+	bool useUpdate = false;
+
 
 
 	//メインループ
@@ -1305,6 +1329,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			ImGui::Begin("Window");
 			ImGui::DragFloat4("color", &materialData->x, 0.01f);//ImGui::DragFloat3("color", &materialData->x, 0.01f);
 			ImGui::DragFloat3("rotate", &transform.rotate.x, 0.01f);
+			ImGui::Checkbox("isPaticle", &useUpdate);
 			ImGui::End();
 
 			//transform.rotate.y += 0.03f;
@@ -1327,10 +1352,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 				Matrix4x4 worldViewprojectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 				instancingData[index].WVP = worldViewprojectionMatrix;
 				instancingData[index].World = worldMatrix;
+				instancingData[index].color = particles[index].color;
 
 				if (useUpdate == true)
 				{
-					 particles[index].transform.translate +=particles[index].velocity * kDeltaTime;
+					particles[index].transform.translate += particles[index].velocity * kDeltaTime;
 				}
 			}
 
