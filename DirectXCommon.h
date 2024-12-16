@@ -8,6 +8,9 @@
 #include"externals/DirectXTex/DirectXTex.h"
 #include"externals/DirectXTex/d3dx12.h"
 
+#pragma comment(lib,"dxcompiler.lib")
+
+
 class WinApp;
 
 class DirectXCommon
@@ -17,6 +20,7 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource>CreateDepthStencilTextureResource(ID3D12Device* device, int32_t width, int32_t height);
 
+	//シェーダーのコンパイル
 	IDxcBlob* CompileShader(
 		//CompilerするShaderファイルへのパス
 		const std::wstring& filePath,
@@ -29,6 +33,16 @@ public:
 	ID3D12DescriptorHeap* CreateDescriptorHeap(
 		D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 
+	//Resource作成の関数化
+	Microsoft::WRL::ComPtr<ID3D12Resource>CreateBufferResource(ID3D12Device* device, size_t sizeInBytes);
+
+	//CreateTextureResourceを作成する
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata);
+
+	void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages);
+
+	//Loadtexture関数を作る
+	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
 
 public:
 	//初期化
@@ -91,16 +105,16 @@ public:
 	ID3D12Device* GetDevice()const { return device.Get(); }
 	Microsoft::WRL::ComPtr < ID3D12GraphicsCommandList> GetCommandList()const { return commandList.Get(); }
 
-private:
+	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
+
 	HRESULT hr;
 
 	//名前関連
-	Microsoft::WRL::ComPtr<ID3D12Device>device;
+	Microsoft::WRL::ComPtr<ID3D12Device>device = nullptr;
 
-	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
+	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
 
-	//コマンドの初期化
-
+private:
 
 	//DSV用のヒープでディスクリプタの数１。DSVはshader内で触るものではないので、ShaderVisibleはfalse
 
