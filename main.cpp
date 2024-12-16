@@ -10,7 +10,9 @@
 #include"externals/imgui/imgui_impl_dx12.h"
 #include"externals/imgui/imgui_impl_win32.h"
 #include"externals/DirectXTex/DirectXTex.h"
-
+#include"math/Vector4.h"
+#include"math/Vector3.h"
+#include"math/Vector2.h"
 
 #include"input.h"
 #include"WinApp.h"
@@ -24,10 +26,6 @@
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"dxcompiler.lib")
-
-
-
-
 
 struct VertexData {
 	Vector4 position;
@@ -174,7 +172,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 
 //windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
-	D3DResourceLeakChecker leakCheck;
+	
 	//ポインタ
 	WinApp* winApp = nullptr;
 	winApp = new WinApp();
@@ -191,11 +189,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 2.デバックコントローラーに値が入るとif文が作動する
 	// 3.デバックレイヤーを有効化する
 	// 4.GPU側でもチェックを行うようにする
-
-
-
-
-
 
 	//文字列を格納する
 	std::string str0{ "STRING!!!" };
@@ -268,25 +261,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	}
 #endif // _DEBUG
-
-
-
-	//01_00の12ページから始まる4/17
-
-
-
-
-
-
-	//01_00の20ページから始まる4/18
-
-
-
-
-
-
-
-	//02_00_29ページの内容
 
 	// RootSignature作成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
@@ -465,11 +439,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Matrix4x4* transformationMatrixDate = nullptr;
 
 	//書き込むためのアドレスを取得
-	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
+	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&MaterialData));
 	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDate));
 
 	//今回は赤を書き込んでみる
-	*materialData = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+	*MaterialData = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 
 	// 頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
@@ -642,7 +616,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//ImGui::ShowDemoWindow();
 		ImGui::Begin("Window");
 		//変える変数の名前,変えるデータ,変える速度
-		ImGui::ColorEdit3("color", &materialData->x);
+		ImGui::ColorEdit3("color", &MaterialData->x);
 		//ImGui::DragFloat3("CameraTranslate", &cameraTransform, 0.01f);
 		//ImGui::DragFloat3("CameraTranslate", &cameraRotate.x, 0.01f);
 		//ImGui::DragFloat("SphereRadius", &sphere.radius, 0.01f);

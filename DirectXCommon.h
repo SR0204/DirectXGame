@@ -7,6 +7,7 @@
 #include<dxcapi.h>
 
 #include"externals/DirectXTex/DirectXTex.h"
+
 class WinApp;
 
 //DirectX基盤
