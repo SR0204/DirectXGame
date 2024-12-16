@@ -1,6 +1,5 @@
 #pragma once
-#include"Vector3.h"
-#include"Matrix4x4.h"
+
 #include<math.h>
 #include<cmath>
 #define _USE_MATH_DEFINES
