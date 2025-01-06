@@ -5,6 +5,7 @@
 #include<string>
 #include<array>
 #include<dxcapi.h>
+#include<chrono>
 
 #include"externals/DirectXTex/DirectXTex.h"
 
@@ -172,7 +173,14 @@ private://メンバ関数
 	/// <returns></returns>
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
+	//FPS固定初期化
+	void InitializeFixFPS();
 
+	//FPS固定更新
+	void UpdateFixFPS();
+
+	//記録時間(FPS固定用)
+	std::chrono::steady_clock::time_point reference_;
 
 private:
 
