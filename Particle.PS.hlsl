@@ -17,8 +17,8 @@ Pixelshaderoutput main(VertexShaderOutput input)
 {
     Pixelshaderoutput output;
     
-    float4 transformedUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.color);
-    float4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
+    //float4 transformedUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.color);
+    float4 textureColor = gTexture.Sample(gSampler, input.texcoord);
     output.color = gMaterial.color * textureColor;
     
 	//output.colorのa値が0の時にPixelを棄却

@@ -484,27 +484,9 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);
 		}
 
-
-
-
-
-
-
-
-
 	}
 	return modelData;
 }
-
-
-
-
-
-
-
-
-
-
 
 
 //Windowsアプリでのエントリーポイント(main関数)
@@ -1026,8 +1008,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 	//リソースの先頭のアドレスから使う
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	//仕様するリソースのサイズは頂点３つ分のサイズ
-
+	
 	//使用するリソースのサイズは頂点のサイズ
 	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * kVertexCount);
 	//1頂点当たりのサイズ
@@ -1455,7 +1436,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			//commandList->DrawInstanced(6, 1, 0, 0);
 
 
-			//commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
 
 
