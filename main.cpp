@@ -185,6 +185,11 @@ IDxcBlob* CompileShader(
 	return shaderBlob;
 }
 
+const uint32_t kSubdivision = 16;//分割数
+const uint32_t kVertexCount = kSubdivision * kSubdivision * 6;//球体頂点数
+
+
+
 //Resource作成の関数化
 ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes)
 {
