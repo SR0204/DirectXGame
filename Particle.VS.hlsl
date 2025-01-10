@@ -25,7 +25,7 @@ struct ParticleForGPU
 {
     float4x4 WVP;
     float4x4 World;
-    float4x4 color;
+    float4 color;
 };
 StructuredBuffer<ParticleForGPU> gPaticle : register(t0);
 
