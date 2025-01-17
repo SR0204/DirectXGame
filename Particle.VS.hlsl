@@ -10,6 +10,16 @@ struct TransformationMatrix
 };
 StructuredBuffer<TransformationMatrix> gTransformationMatrices : register(t0);
 
+struct Material
+{
+    float3 color;
+    int32_t enableLighting;
+    float3 uvTransform;
+    float3 shininess;
+};
+
+
+
 //struct VertexShaderOutput {
 //	float32_t4 position : SV_POSITION;
 //};
@@ -20,10 +30,13 @@ struct VertexShaderInput
     float2 texcoord : TEXCOORD0;
 };
 
+
+
 VertexShaderOutput main(VertexShaderInput input, uint32_t instanceId : SV_InstanceID)
 {
     VertexShaderOutput output;
     output.position = mul(input.position, gTransformationMatrices[instanceId].WVP); //output.position = input.position
     output.texcoord = input.texcoord;
+    output.worldPosition = mul(input.position, gTransformationMatrices[instanceId].World).xyz;
     return output;
 }
