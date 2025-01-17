@@ -1118,24 +1118,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 	////左下
-	//vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
-	//vertexData[0].texcoord = { 0.0f,1.0f };
+	//vertexData[0].position = { -0.5f,0.5f,0.0f,1.0f };
+	//vertexData[0].texcoord = { 0.0f,0.0f };
 	////上
-	//vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
-	//vertexData[1].texcoord = { 0.5f,0.0f };
+	//vertexData[1].position = { 0.5f,0.5f,0.0f,1.0f };
+	//vertexData[1].texcoord = { 1.0f,0.0f };
 	////右下
 	//vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
 	//vertexData[2].texcoord = { 1.0f,1.0f };
 
 	////左下2
-	//vertexData[3].position = { -0.5f,-0.5f,0.5f,1.0f };
-	//vertexData[3].texcoord = { 0.0f,1.0f };
+	//vertexData[3].position = { -0.5f,0.5f,0.0f,1.0f };
+	//vertexData[3].texcoord = { 0.0f,0.0f };
 	////上2
-	//vertexData[4].position = { 0.0f,0.0f,0.0f,1.0f };
-	//vertexData[4].texcoord = { 0.5f,0.0f };
+	//vertexData[4].position = { 0.5f,-0.5f,0.0f,1.0f };
+	//vertexData[4].texcoord = { 1.0f,1.0f };
 	////右下2
-	//vertexData[5].position = { 0.5f,-0.5f,-0.5f,1.0f };
-	//vertexData[5].texcoord = { 1.0f,1.0f };
+	//vertexData[5].position = { -0.5f,-0.5f,-0.5f,1.0f };
+	//vertexData[5].texcoord = { 0.0f,1.0f };
 
 	//Sprite用の頂点リソースを作る
 	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
@@ -1234,7 +1234,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 	//Textureを読んで転送する
-	DirectX::ScratchImage mipImages = LoadTexture("Resources/uvChecker.png");//uvChecker.png
+	DirectX::ScratchImage mipImages = LoadTexture("Resources/monsterBall.png");//uvChecker.png
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
 	ID3D12Resource* textureResource = CreateTextureResource(device, metadata);
 	UploadTextureData(textureResource, mipImages);
@@ -1276,7 +1276,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 	//instancing用のResource作成
-	const uint32_t kNumInstance = 10;//インスタンス数
+	const uint32_t kNumInstance = 1;//インスタンス数10
 	//Instancing用のTransformationMatrixリソースを作る
 	Microsoft::WRL::ComPtr<ID3D12Resource>instancingResource =
 		CreateBufferResource(device, sizeof(TransformationMatrix) * kNumInstance);
@@ -1330,7 +1330,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			//選択して色が変えられる
 			ImGui::Begin("Window");
 			ImGui::DragFloat4("color", &materialData->x, 0.01f);//ImGui::DragFloat3("color", &materialData->x, 0.01f);
-			ImGui::DragFloat3("rotate", &transform.rotate.x, 0.01f);
+			ImGui::DragFloat3("rotate", &transforms->rotate.x, 0.01f);
 			ImGui::End();
 
 			//transform.rotate.y += 0.03f;
