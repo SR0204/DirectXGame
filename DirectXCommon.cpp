@@ -114,14 +114,10 @@ D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetSRVGPUDescriptorHandle(uint32_t in
 
 void DirectXCommon::PreDraw() {
 
-	/*******************************生成**************************************/
+
 	//これから書き込むバックバッファのインデックスを取得
 	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();//1.end
-	/***TransitionBarrierを張る***/
-	// TransitionBarrierの設定
-	/*******************************生成**************************************/
-
-	/*******************************受け渡し*****************************************/
+	
 	// 今回のバリアはTransition
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	// Noneにしておく。
@@ -134,25 +130,33 @@ void DirectXCommon::PreDraw() {
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	// TransitionBarrierを張る
 	commandList_->ResourceBarrier(1, &barrier);
-	/*******************************受け渡し*****************************************/
+	
+
+
 	//描画先のRTVを設定する。
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	commandList_->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);//2.end
+	commandList_->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
+
 	//描画用のDescriptorHeapの設定
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { srvDescriptorHeap };
 	commandList_->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
 
 	//指定した色で画面全体をクリアする
 	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
-	commandList_->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);//3.end
+	commandList_->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
+
 	//指定した深度で画面全体をクリアする
 	commandList_->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
 	//SRVを作成するDescriptorHeapの場所を決める
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
 	//　コマンドを積む(三角形の描画)
 	commandList_->RSSetViewports(1, &viewport);//Viewportを設定
 	commandList_->RSSetScissorRects(1, &scissorRect);//Scirssorを設定
+
+
+
 
 	//　形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
 	commandList_->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -172,15 +176,7 @@ void DirectXCommon::PostDraw() {
 
 	//コマンドリストの内容を確定させる。すべてのコマンドを積んでからcloseすること
 	hr = commandList_->Close();
-	assert(SUCCEEDED(hr));//4.end
-
-	//コマンドをキックする
-	// 1.CommandListが完成したので、CommandQueueを使ってGPUにキックする
-	// 2.実行が終わったら、画面が完成したので画面の交換をしてもらう
-	//	a.これは、SwapChain作成時に指定したCommandQueueを介して行われる
-	//	b.画面交換用のExecuteCommandListを行っていると考えると良い
-	// 3.画面の交換をしたら次のフレームの準備をする
-	//	a.実際に保存する場所を管理しているAllocatorとCommandListの両方をResetする
+	assert(SUCCEEDED(hr));
 
 	//FPS固定
 	UpdateFixFPS();
@@ -191,11 +187,6 @@ void DirectXCommon::PostDraw() {
 
 	//GPUとOSに画面の交換を行うよう通知する
 	swapChain->Present(1, 0);//2.end
-
-	//Signalを送る
-	// 1.実行が完了したタイミングでFenceに指定した値を書き込んでもらう
-	// 2.CPUではFenceに指定した値が書き込まれているかを確認する
-	// 3.指定した値が書き込まれていないのであれば、書き込まれるまで待つ
 
 	//Fenceの値を更新
 	fenceValue++;
@@ -511,9 +502,9 @@ void DirectXCommon::CreateDepthStencilTextureResource() {
 		&resourceDesc,						//Resourceの設定
 		D3D12_RESOURCE_STATE_DEPTH_WRITE,	//深度値を書き込む状態にしておく
 		&depthClearValue,					//Clear最適値
-		/***************受け渡し*******************/
+	
 		IID_PPV_ARGS(&depthStencilResource_)//作成するResourceポインタへのポインタ
-		/***************受け渡し*******************/
+	
 	);
 	assert(SUCCEEDED(hr));
 	
