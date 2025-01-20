@@ -1372,7 +1372,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//Mapしてデータを書き込む
 
 	//SpriteはLightingしないのでfasleを設定する
-	
+	 
 
 	MSG msg{};
 	while (msg.message != WM_QUIT) {
