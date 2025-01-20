@@ -4,7 +4,6 @@
 #include<format>
 #include<cassert>
 #include<dxgidebug.h>
-
 #include<fstream>
 #include<sstream>
 #include"externals/imgui/imgui_impl_dx12.h"
@@ -13,7 +12,6 @@
 #include"math/Vector4.h"
 #include"math/Vector3.h"
 #include"math/Vector2.h"
-
 #include"input.h"
 #include"WinApp.h"
 #include"DirectXCommon.h"
@@ -184,26 +182,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
 
-	//DebugLayerを表示する
-	// 1.デバックコントローラーを初期化する
-	// 2.デバックコントローラーに値が入るとif文が作動する
-	// 3.デバックレイヤーを有効化する
-	// 4.GPU側でもチェックを行うようにする
-
 	//文字列を格納する
 	std::string str0{ "STRING!!!" };
 
 	//整数を文字列にする
 	std::string str1{ std::to_string(10) };
 
-
-
-	//ここから下に05の資料を書いていく
-
 	//DXGIファクトリーの作成
-
-
-
 
 	//ポインタ
 	Input* input = nullptr;
@@ -211,15 +196,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//入力の初期化
 	input = new Input();
 	input->Initialize(winApp);
-
-
-	//段階的に分けてエラーと警告を表示し、停止する。
-	// 1.インフォキューを生成する
-	// 2.インフォキューに値が入ったらif文が作動する
-	// 3.やばいエラーの時に作動する
-	// 4.エラーの時に止まる
-	// 5.警告時に止まる
-	// 6.何もなかったら開放する。
 
 #ifdef _DEBUG
 	Microsoft::WRL::ComPtr<ID3D12InfoQueue> infoQueue = nullptr;//1.end
