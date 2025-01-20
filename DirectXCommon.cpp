@@ -481,7 +481,6 @@ void DirectXCommon::CreateSwapChain() {
 }
 
 void DirectXCommon::CreateDepthStencilTextureResource() {
-	/*******************************生成**************************************/
 
 	// 生成するResourceの設定
 	D3D12_RESOURCE_DESC resourceDesc{};
@@ -493,9 +492,6 @@ void DirectXCommon::CreateDepthStencilTextureResource() {
 	resourceDesc.SampleDesc.Count = 1;								//サンプリングカウント。1固定。
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;	//２次元
 	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;	//DepthStencilとして使う通知
-	/*******************************生成**************************************/
-
-
 
 	//利用するHeapの設定
 	D3D12_HEAP_PROPERTIES heapProperties{};
@@ -506,7 +502,6 @@ void DirectXCommon::CreateDepthStencilTextureResource() {
 	depthClearValue.DepthStencil.Depth = 1.0f;				 //1.0f(最大値)でクリア
 	depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;	 //フォーマット。Resourceと合わせる
 
-	/*******************************生成**************************************/
 
 	//depthStencilResourceの生成
 	depthStencilResource_ = nullptr;//初期化
@@ -521,9 +516,7 @@ void DirectXCommon::CreateDepthStencilTextureResource() {
 		/***************受け渡し*******************/
 	);
 	assert(SUCCEEDED(hr));
-	/*******************************生成**************************************/
-
-
+	
 }
 
 void DirectXCommon::CreateAllDescriptorHeap() {
