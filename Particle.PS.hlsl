@@ -1,4 +1,3 @@
-
 #include"Particle.hlsli"
 
 struct Pixelshaderoutput
@@ -14,21 +13,13 @@ struct Material
 };
 ConstantBuffer<Material> gMaterial : register(b0);
 
-struct Camera
-{
-    float3 worldPositon;
-};
-ConstantBuffer<Camera> gCamera : register(b2);
-
 Pixelshaderoutput main(VertexShaderOutput input)
 {
     Pixelshaderoutput output;
     
-    //float4 transformedUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.color);
-    float4 textureColor = gTexture.Sample(gSampler, input.texcoord);
+    float4 transformedUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.color);
+    float4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
     output.color = gMaterial.color * textureColor;
-    
-    float3 toEye = normalize(gCamera.worldPositon - input.worldPosition);
     
 	//output.colorのa値が0の時にPixelを棄却
     if (output.color.a == 0.0)
