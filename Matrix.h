@@ -234,15 +234,6 @@ Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float botto
 	ret.m[3][2] = nearClip / (nearClip - farClip);
 	ret.m[3][3] = 1.0f;
 
-
-
-
-
-
-
-
-
-
 	return ret;
 }
 
