@@ -16,6 +16,8 @@ struct VertexShaderInput
     float3 normal : NORMAL0;
 };
 
+
+
 VertexShaderOutput main(VertexShaderInput input)
 {
     VertexShaderOutput output;

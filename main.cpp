@@ -58,6 +58,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	//　標準のメッセージ処理を行う
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
+
+
+
+
 std::wstring ConvertString(const std::string& str) {
 	if (str.empty()) {
 		return std::wstring();
@@ -664,11 +668,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを使う
 		rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//VertexShaderで使う
-		rootParameters[3].Descriptor.ShaderRegister = 1;//レジスタ番号２を使う
+		rootParameters[3].Descriptor.ShaderRegister = 1;//レジスタ番号1を使う
 
-		rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-		rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-		rootParameters[4].Descriptor.ShaderRegister = 2;
+		rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを使う
+		rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//VertexShaderで使う
+		rootParameters[4].Descriptor.ShaderRegister = 2;//レジスタ番号２を使う
 
 
 		descriptionRootSignature.pParameters = rootParameters;//ルートパラメータ配列へのポインタ
@@ -784,7 +788,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		assert(SUCCEEDED(hr));
 
 		//球の描画
-		const uint32_t kSubdivision = 16;//分割数
+		const uint32_t kSubdivision = 10;//分割数
 		const uint32_t kVertexCount = kSubdivision * kSubdivision * 6;//球体頂点数
 
 
@@ -841,6 +845,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//今回は赤を書き込んでみる
 		materialData->color = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 		materialData->enableLighting = true;
+		materialData->shininess = 70.0f;
 		//今回は白で設定する
 		materialDataSprite->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 		materialDataSprite->enableLighting = true;
@@ -1071,7 +1076,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		bool useMonsterBall = true;
 
-
+		//デフォルト値はとりあえず以下のようにしておく
+		directionalLightData->color = { 1.0f,1.0f ,1.0f ,1.0f };
+		directionalLightData->direction = { 0.0f,-1.0f ,0.0f };
+		directionalLightData->intensity = 1.0f;
 
 		//カメラ用のリソースを作る
 		ID3D12Resource* cameraResource = CreateBufferResource(device, sizeof(CameraForGPU));
@@ -1082,7 +1090,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//書き込むためのアドレスを取得
 		cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraData));
 
-		//
+		cameraData->worldPosition = { 0.0f,0.0f,10.0f };
 
 		MSG msg{};
 		//ウィンドウのxボタンが押されるまでループ
@@ -1186,7 +1194,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 				//マテリアルCBufferの場所を設定
 				//commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-				commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
+				commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 				//wvp用のCBufferの場所を設定
 				commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 				// SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
@@ -1198,6 +1206,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				//指定した深度で画面全体をクリアする
 				commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
+				//カメラ	のCBufferの場所を設定
+				commandList->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
+
 				//　描画！！(DrawCall/ドローコール)。３頂点で１つのインスタンス。インスタンスについては今度
 				commandList->DrawInstanced(kVertexCount, 1, 0, 0);
 
@@ -1206,8 +1217,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				//TransformationMatrixCBufferの場所を設定
 				commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 
-				//カメラ	のCBufferの場所を設定
-				commandList->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
+
+
 
 				//描画!(DrawCall/ドローコール)
 				commandList->DrawInstanced(6, 1, 0, 0);
@@ -1303,6 +1314,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		pixelShaderBlob->Release();
 		vertexShaderBlob->Release();
 		materialResource->Release();
+		
+		cameraResource->Release();
 
 #ifdef _DEBUG
 		debugController->Release();
