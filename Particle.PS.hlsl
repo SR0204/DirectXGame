@@ -13,6 +13,7 @@ struct Material
 };
 ConstantBuffer<Material> gMaterial : register(b0);
 
+
 Pixelshaderoutput main(VertexShaderOutput input)
 {
     Pixelshaderoutput output;
