@@ -632,5 +632,6 @@ void DirectXCommon::ImGuiInitialize() {
 		srvDescriptorHeap.Get(),
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart()
+		
 	);
 }

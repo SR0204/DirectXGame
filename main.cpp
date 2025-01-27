@@ -698,16 +698,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//		debugController->Release();
 	//#endif // _DEBUG
 
-
-	delete dxCommon;
+	
+	/*delete dxCommon;*/
 
 	//windowsAPIの終了処理
 	winApp->Finalize();
 
 	//WindowsAPI開放処理
 	delete winApp;
-
-
 
 
 
