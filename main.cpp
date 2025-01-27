@@ -691,23 +691,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 
-
-	//開放処理
-	CloseHandle(dxCommon->GetFenceEvent());
 	//#ifdef _DEBUG
 	//		debugController->Release();
 	//#endif // _DEBUG
-
-	
-	/*delete dxCommon;*/
 
 	//windowsAPIの終了処理
 	winApp->Finalize();
 
 	//WindowsAPI開放処理
 	delete winApp;
-
-
 
 	return 0;
 }

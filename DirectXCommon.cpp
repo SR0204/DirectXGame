@@ -80,8 +80,11 @@ void DirectXCommon::UpdateFixFPS()
 	reference_ = std::chrono::steady_clock::now();
 }
 
-
-
+void DirectXCommon::Finalize()
+{
+	//開放処理
+	CloseHandle(fenceEvent);
+}
 
 void DirectXCommon::Initialize(WinApp* winApp) {
 	//NULL検出
@@ -516,7 +519,7 @@ void DirectXCommon::CreateDepthStencilTextureResource() {
 		/***************受け渡し*******************/
 	);
 	assert(SUCCEEDED(hr));
-	
+
 }
 
 void DirectXCommon::CreateAllDescriptorHeap() {
@@ -632,6 +635,6 @@ void DirectXCommon::ImGuiInitialize() {
 		srvDescriptorHeap.Get(),
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart()
-		
+
 	);
 }

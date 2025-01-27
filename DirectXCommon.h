@@ -182,6 +182,8 @@ private://メンバ関数
 	//記録時間(FPS固定用)
 	std::chrono::steady_clock::time_point reference_;
 
+	void Finalize();
+
 private:
 
 	//HRESULTはWindows系のエラーコードであり、
@@ -248,6 +250,5 @@ private:
 	HANDLE fenceEvent;
 	//バリア
 	D3D12_RESOURCE_BARRIER barrier{};
-
 
 };
