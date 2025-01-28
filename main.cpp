@@ -512,12 +512,10 @@ std::uniform_real_distribution<float>distribution(-1.0f, 1.0f);
 //色を変える
 std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
 
-
+std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
 
 Particle MakeNewParticle(std::mt19937& randomEngine)
 {
-	std::uniform_real_distribution<float>distribution(-1.0f, 1.0f);
-	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
 
 	Particle particle;
 	particle.transform.scale = { 1.0f,1.0f,1.0f };
@@ -1324,14 +1322,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 		if (particles[index].lifeTime <= particles[index].currentTime) {
 			continue;
 		}
+		float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
+
 		particles[index].transform.translate += particles[index].velocity * kDeltaTime;
 		particles[index].currentTime += kDeltaTime;
 		instancingData[numInstance].WVP = worldViewProjectionMatrixSprite;
 		instancingData[numInstance].World = worldMatrixSprite;
 		instancingData[numInstance].color = particles[index].color;
+		instancingData[numInstance].color.w = alpha;
 		++numInstance;
 	}
-
 
 
 	//メインループ
