@@ -67,6 +67,8 @@ struct Particle
 	Transform transform;
 	Vector3 velocity;
 	Vector4 color;
+	float lifeTime;
+	float currentTime;
 };
 
 struct ParticleForGPU {
@@ -510,18 +512,25 @@ std::uniform_real_distribution<float>distribution(-1.0f, 1.0f);
 //色を変える
 std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
 
+
+
 Particle MakeNewParticle(std::mt19937& randomEngine)
 {
 	std::uniform_real_distribution<float>distribution(-1.0f, 1.0f);
+	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
+
 	Particle particle;
 	particle.transform.scale = { 1.0f,1.0f,1.0f };
 	particle.transform.rotate = { 0.0f,0.0f,0.0f };
 	particle.transform.translate = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
 	particle.velocity = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
 	particle.color = { distColor(randomEngine),distColor(randomEngine), distColor(randomEngine),1.0f };
+	particle.lifeTime = distTime(randomEngine);
+	particle.currentTime = 0;
 	return particle;
 
 }
+
 
 
 
@@ -1261,19 +1270,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 	//instancing用のResource作成
-	const uint32_t kNumInstance = 10;//インスタンス数
+	const uint32_t kNumMaxInstance = 10;//インスタンス数
 	//Instancing用のTransformationMatrixリソースを作る
-	Microsoft::WRL::ComPtr<ID3D12Resource>instancingResource = CreateBufferResource(device, sizeof(ParticleForGPU) * kNumInstance);
+	Microsoft::WRL::ComPtr<ID3D12Resource>instancingResource = CreateBufferResource(device, sizeof(ParticleForGPU) * kNumMaxInstance);
 
 	//書き込むためのアドレスを取得
 	TransformationMatrix* instancingData = nullptr;
 	instancingResource->Map(0, nullptr, reinterpret_cast<void**>(&instancingData));
 	//単位行列を書き込んでおく
-	for (uint32_t index = 0; index < kNumInstance; ++index)
+	for (uint32_t index = 0; index < kNumMaxInstance; ++index)
 	{
 		instancingData[index].WVP = MakeIdentity4x4();
 		instancingData[index].World = MakeIdentity4x4();
-		instancingData[index].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);	
+		instancingData[index].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
 	//SRVの作成
@@ -1285,19 +1294,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	instancingSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 	instancingSrvDesc.Buffer.FirstElement = 0;
 	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-	instancingSrvDesc.Buffer.NumElements = kNumInstance;
+	instancingSrvDesc.Buffer.NumElements = kNumMaxInstance;
 	instancingSrvDesc.Buffer.StructureByteStride = sizeof(ParticleForGPU);//TransformationMatrix
 	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = GetCPUDescriptorHandle(srvDescriptorHeap, desriptorSizeSRV, 3);
 	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap, desriptorSizeSRV, 3);
 	device->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
 
 	//Particleの作成
-	Particle particles[kNumInstance];
+	Particle particles[kNumMaxInstance];
 
 
 
 	//乱数生成器 位置と速度を[-1,1]でランダムに初期化
-	for (uint32_t index = 0; index < kNumInstance; ++index)
+	for (uint32_t index = 0; index < kNumMaxInstance; ++index)
 	{
 		particles[index] = MakeNewParticle(randomEngine);
 
@@ -1308,6 +1317,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 	//パーティクルを動かすやつ
 	bool useUpdate = false;
+
+
+	uint32_t numInstance = 0;//描画すべきインスタンス数
+	for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
+		if (particles[index].lifeTime <= particles[index].currentTime) {
+			continue;
+		}
+		particles[index].transform.translate += particles[index].velocity * kDeltaTime;
+		particles[index].currentTime += kDeltaTime;
+		instancingData[numInstance].WVP = worldViewProjectionMatrixSprite;
+		instancingData[numInstance].World = worldMatrixSprite;
+		instancingData[numInstance].color = particles[index].color;
+		++numInstance;
+	}
 
 
 
@@ -1345,7 +1368,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 			//instancing用
 			Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
-			for (uint32_t index = 0; index < kNumInstance; ++index) {
+			for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
 
 				Matrix4x4 worldMatrix =
 					MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
@@ -1424,9 +1447,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			//描画！（DrawCall/ドローコール)。３頂点で１つのインスタンス。インスタンスについては今後
 			//commandList->DrawInstanced(3, 1, 0, 0);
 			//commandList->DrawInstanced(6, 1, 0, 0);
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumInstance, 0, 0);
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumMaxInstance, 0, 0);
 
-
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), numInstance, 0, 0);
 
 			//Spriteの描画。変更が必要なものだけ変更する
 			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//VBVを設定
