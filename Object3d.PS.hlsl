@@ -46,12 +46,12 @@ PixelShaderOutput main(VertexShaderOutput input)
         float3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
         float3 reflectLight = reflect(normalize(gDirectionalLight.direction), normalize(input.normal));
    
-        float RdotE = dot(reflectLight, toEye);
-        float specularPow = pow(saturate(RdotE), gMaterial.shininess);
+        //float RdotE = dot(reflectLight, toEye);
+        //float specularPow = pow(saturate(RdotE), gMaterial.shininess);
    
-        float halfVector = normalize(-gDirectionalLight.direction + toEye);
+        float32_t3 halfVector = normalize(-gDirectionalLight.direction + toEye);
         float NDotH = dot(normalize(input.normal), halfVector);
-        //float specularPow = pow(saturate(NDotH), gMaterial.shininess);
+        float specularPow = pow(saturate(NDotH), gMaterial.shininess);
         
         // 拡散反射
         float3 diffuse =
