@@ -1320,7 +1320,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//パーティクルを動かすやつ
 	bool useUpdate = true;
 
-	
+	bool useBillBoard = true;
+
 	//メインループ
 	MSG msg{};
 	while (msg.message != WM_QUIT) {
@@ -1340,6 +1341,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			ImGui::DragFloat4("color", &materialData->x, 0.01f);//ImGui::DragFloat3("color", &materialData->x, 0.01f);
 			ImGui::DragFloat3("rotate", &transform.rotate.x, 0.01f);
 			ImGui::Checkbox("isPaticle", &useUpdate);
+			ImGui::Checkbox("billboard", &useBillBoard);
 			ImGui::End();
 
 			//transform.rotate.y += 0.03f;
@@ -1372,7 +1374,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 				{0.0f,23.0f,10.0f}
 			};
 
+			if (useBillBoard == true) {
 
+
+			}
 
 			//instancing用
 			Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
