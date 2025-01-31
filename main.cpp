@@ -513,6 +513,7 @@ std::uniform_real_distribution<float>distribution(-1.0f, 1.0f);
 std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
 
 
+std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
 
 Particle MakeNewParticle(std::mt19937& randomEngine)
 {
@@ -523,7 +524,8 @@ Particle MakeNewParticle(std::mt19937& randomEngine)
 	particle.transform.translate = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
 	particle.velocity = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
 	particle.color = { distColor(randomEngine),distColor(randomEngine), distColor(randomEngine),1.0f };
-	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
+
+
 	particle.lifeTime = distTime(randomEngine);
 	particle.currentTime = 0;
 	return particle;
@@ -1315,25 +1317,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	const float kDeltaTime = 1.0f / 60.0f;
 
 	//パーティクルを動かすやつ
-	bool useUpdate = false;
-
-
-	uint32_t numInstance = 0;//描画すべきインスタンス数
-	for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
-		if (particles[index].lifeTime <= particles[index].currentTime) {
-			continue;
-		}
-		float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
-
-		particles[index].transform.translate += particles[index].velocity * kDeltaTime;
-		particles[index].currentTime += kDeltaTime;
-		instancingData[numInstance].WVP = worldViewProjectionMatrixSprite;
-		instancingData[numInstance].World = worldMatrixSprite;
-		instancingData[numInstance].color = particles[index].color;
-		instancingData[numInstance].color.w = alpha;
-		++numInstance;
-	}
-
+	bool useUpdate = true;
 
 	//メインループ
 	MSG msg{};
@@ -1369,19 +1353,47 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 			//instancing用
 			Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
+
+			uint32_t numInstance = 0;//描画すべきインスタンス数
+
 			for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
+
+				if (particles[index].lifeTime <= particles[index].currentTime) {
+					continue;
+				}
 
 				Matrix4x4 worldMatrix =
 					MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
 				Matrix4x4 worldViewprojectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
+
+				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
+
+
+
+				particles[index].transform.translate += particles[index].velocity * kDeltaTime;
+				particles[index].currentTime += kDeltaTime;
+				instancingData[numInstance].WVP = worldViewProjectionMatrixSprite;
+				instancingData[numInstance].World = worldMatrixSprite;
+				instancingData[numInstance].color = particles[index].color;
+
+				instancingData[numInstance].color.w = alpha;
+				++numInstance;
+
+
+
+
 				instancingData[index].WVP = worldViewprojectionMatrix;
 				instancingData[index].World = worldMatrix;
 				instancingData[index].color = particles[index].color;
+
+
+
 
 				if (useUpdate == true)
 				{
 					particles[index].transform.translate += particles[index].velocity * kDeltaTime;
 				}
+
 			}
 
 
