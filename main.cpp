@@ -80,6 +80,7 @@ struct ParticleForGPU {
 };
 
 
+
 //ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
@@ -514,7 +515,7 @@ std::uniform_real_distribution<float>distribution(-1.0f, 1.0f);
 std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
 
 
-std::uniform_real_distribution<float>distTime(1.0f, 10.0f);
+std::uniform_real_distribution<float>distTime(1.0f, 20.0f);
 
 Particle MakeNewParticle(std::mt19937& randomEngine)
 {
@@ -1267,9 +1268,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//Transform変数を作る
 	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 
-	Transform cameratransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-15.0f} };
+	//Transform cameratransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-15.0f} };
 
-
+	Transform cameraTransform{
+				{1.0f,1.0f,1.0f},
+				{std::numbers::pi_v<float> / 3.0f,std::numbers::pi_v<float>,0.0f},
+				{0.0f,23.0f,10.0f}
+	};
 
 	//instancing用のResource作成
 	const uint32_t kNumMaxInstance = 10;//インスタンス数
@@ -1317,10 +1322,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//Δtを定義。
 	const float kDeltaTime = 1.0f / 60.0f;
 
-	//パーティクルを動かすやつ
-	bool useUpdate = true;
 
-	bool useBillBoard = true;
+
+	bool useBillBoard = false;
 
 	//メインループ
 	MSG msg{};
@@ -1339,8 +1343,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			//選択して色が変えられる
 			ImGui::Begin("Window");
 			ImGui::DragFloat4("color", &materialData->x, 0.01f);//ImGui::DragFloat3("color", &materialData->x, 0.01f);
-			ImGui::DragFloat3("rotate", &transform.rotate.x, 0.01f);
-			ImGui::Checkbox("isPaticle", &useUpdate);
+			ImGui::DragFloat3("CameraRotate", &cameraTransform.rotate.x, 0.01f);
 			ImGui::Checkbox("billboard", &useBillBoard);
 			ImGui::End();
 
@@ -1349,35 +1352,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			*wvpData = worldMatrix;
 
 			//WVPMatrixを作成して設定する
-			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameratransform.scale, cameratransform.rotate, cameratransform.translate);
+			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 			Matrix4x4 viewMatrix = Invers(cameraMatrix);
 			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kCLientWidth) / float(kCLientHeight), 0.1f, 100.0f);
 			Matrix4x4 worldViewprojectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 			*transformationMatrixData = worldViewprojectionMatrix;
 
-			Matrix4x4 scaleMatrix = MakeScaleMatrix(particles->transform.scale);
-			Matrix4x4 translateMatrix = MakeTranslateMatrix(particles->transform.translate);
-
-			Matrix4x4 backToFrontMatrix = MakerotateYMatrix(std::numbers::pi_v<float>);
-
-			Matrix4x4 billBoardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
-
-			billBoardMatrix.m[3][0] = 0.0f;
-			billBoardMatrix.m[3][1] = 0.0f;
-			billBoardMatrix.m[3][2] = 0.0f;
-
-			worldMatrix = Multiply(scaleMatrix, Multiply(billBoardMatrix, translateMatrix));
-
-			Transform cameraTransform{
-				{1.0f,1.0f,1.0f},
-				{std::numbers::pi_v<float> / 3.0f,std::numbers::pi_v<float>,0.0f},
-				{0.0f,23.0f,10.0f}
-			};
-
-			if (useBillBoard == true) {
 
 
-			}
+
+			Matrix4x4 scaleMatrix;
+			Matrix4x4 translateMatrix;
+
+
 
 			//instancing用
 			Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
@@ -1390,8 +1377,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 					continue;
 				}
 
+				scaleMatrix = MakeScaleMatrix(particles[index].transform.scale);
+				translateMatrix = MakeTranslateMatrix(particles[index].transform.translate);
+
+
+				Matrix4x4 backToFrontMatrix = MakerotateYMatrix(std::numbers::pi_v<float>);
+
+				Matrix4x4 billBoardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
+
+				billBoardMatrix.m[3][0] = 0.0f;
+				billBoardMatrix.m[3][1] = 0.0f;
+				billBoardMatrix.m[3][2] = 0.0f;
+
+
+
 				/*Matrix4x4 worldMatrix =
 					MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);*/
+
+				Matrix4x4 worldMatrix = Multiply(Multiply(scaleMatrix, billBoardMatrix), (translateMatrix));
+
 				Matrix4x4 worldViewprojectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 
 				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
@@ -1400,26 +1404,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 				particles[index].transform.translate += particles[index].velocity * kDeltaTime;
 				particles[index].currentTime += kDeltaTime;
-				instancingData[numInstance].WVP = worldViewProjectionMatrixSprite;
-				instancingData[numInstance].World = worldMatrixSprite;
-				instancingData[numInstance].color = particles[index].color;
-
-				instancingData[numInstance].color.w = alpha;
-				++numInstance;
-
-
-
 
 				instancingData[index].WVP = worldViewprojectionMatrix;
 				instancingData[index].World = worldMatrix;
 				instancingData[index].color = particles[index].color;
+				instancingData[numInstance].color.w = alpha;
+				++numInstance;
+
+				/*instancingData[numInstance].WVP = worldViewProjectionMatrixSprite;
+								instancingData[numInstance].World = worldMatrixSprite;
+								instancingData[numInstance].color = particles[index].color;*/
 
 
 
 
-				if (useUpdate == true)
-				{
-					particles[index].transform.translate += particles[index].velocity * kDeltaTime;
+				if (useBillBoard == false) {
+
+					billBoardMatrix = MakeIdentity4x4();
+
 				}
 
 			}
@@ -1491,7 +1493,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			//描画！（DrawCall/ドローコール)。３頂点で１つのインスタンス。インスタンスについては今後
 			//commandList->DrawInstanced(3, 1, 0, 0);
 			//commandList->DrawInstanced(6, 1, 0, 0);
-			//commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumMaxInstance, 0, 0);
+
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumMaxInstance, 0, 0);
 
 			commandList->DrawInstanced(UINT(modelData.vertices.size()), numInstance, 0, 0);
 
