@@ -19,6 +19,7 @@
 #include<wrl.h>
 #include<random>
 #include"Matrix4x4.h"
+#include<numbers>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #pragma comment(lib,"d3d12.lib")
@@ -513,7 +514,7 @@ std::uniform_real_distribution<float>distribution(-1.0f, 1.0f);
 std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
 
 
-std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
+std::uniform_real_distribution<float>distTime(1.0f, 5.0f);
 
 Particle MakeNewParticle(std::mt19937& randomEngine)
 {
@@ -1319,6 +1320,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//パーティクルを動かすやつ
 	bool useUpdate = true;
 
+	
+
+
+
 	//メインループ
 	MSG msg{};
 	while (msg.message != WM_QUIT) {
@@ -1350,6 +1355,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kCLientWidth) / float(kCLientHeight), 0.1f, 100.0f);
 			Matrix4x4 worldViewprojectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 			*transformationMatrixData = worldViewprojectionMatrix;
+
+			/*Matrix4x4 backToFrontMatrix = MakerotateYMatrix(std::numbers::pi_v<float>);
+
+			Matrix4x4 billBoardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
+
+			billBoardMatrix.m[3][0] = 0.0f;
+			billBoardMatrix.m[3][1] = 0.0f;
+			billBoardMatrix.m[3][2] = 0.0f;*/
 
 			//instancing用
 			Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
