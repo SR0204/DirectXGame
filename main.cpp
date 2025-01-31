@@ -512,7 +512,7 @@ std::uniform_real_distribution<float>distribution(-1.0f, 1.0f);
 //色を変える
 std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
 
-std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
+
 
 Particle MakeNewParticle(std::mt19937& randomEngine)
 {
@@ -523,6 +523,7 @@ Particle MakeNewParticle(std::mt19937& randomEngine)
 	particle.transform.translate = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
 	particle.velocity = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
 	particle.color = { distColor(randomEngine),distColor(randomEngine), distColor(randomEngine),1.0f };
+	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
 	particle.lifeTime = distTime(randomEngine);
 	particle.currentTime = 0;
 	return particle;
@@ -1026,7 +1027,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	//Depthの機能を有効化する
 	depthStencilDesc.DepthEnable = true;
 	//書き込みします
-	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;//D3D12_DEPTH_WRITE_MASK_ALL
 	//比較関数はLessEqual。つまり、近ければ描画される
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
@@ -1447,7 +1448,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			//描画！（DrawCall/ドローコール)。３頂点で１つのインスタンス。インスタンスについては今後
 			//commandList->DrawInstanced(3, 1, 0, 0);
 			//commandList->DrawInstanced(6, 1, 0, 0);
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumMaxInstance, 0, 0);
+			//commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumMaxInstance, 0, 0);
 
 			commandList->DrawInstanced(UINT(modelData.vertices.size()), numInstance, 0, 0);
 
