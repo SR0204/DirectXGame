@@ -121,7 +121,6 @@ Matrix4x4 MakerotateZMatrix(float radian) {
 }
 
 //3次元アフィン変換行列
-Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
 Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
 	Matrix4x4 rotateXMatrix = MakerotateXMatrix(rotate.x);
 	Matrix4x4 rotateYMatrix = MakerotateYMatrix(rotate.y);

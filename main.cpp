@@ -514,7 +514,7 @@ std::uniform_real_distribution<float>distribution(-1.0f, 1.0f);
 std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
 
 
-std::uniform_real_distribution<float>distTime(1.0f, 5.0f);
+std::uniform_real_distribution<float>distTime(1.0f, 10.0f);
 
 Particle MakeNewParticle(std::mt19937& randomEngine)
 {
@@ -1321,9 +1321,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	bool useUpdate = true;
 
 	
-
-
-
 	//メインループ
 	MSG msg{};
 	while (msg.message != WM_QUIT) {
@@ -1356,13 +1353,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			Matrix4x4 worldViewprojectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 			*transformationMatrixData = worldViewprojectionMatrix;
 
-			/*Matrix4x4 backToFrontMatrix = MakerotateYMatrix(std::numbers::pi_v<float>);
+			Matrix4x4 scaleMatrix = MakeScaleMatrix(particles->transform.scale);
+			Matrix4x4 translateMatrix = MakeTranslateMatrix(particles->transform.translate);
+
+			Matrix4x4 backToFrontMatrix = MakerotateYMatrix(std::numbers::pi_v<float>);
 
 			Matrix4x4 billBoardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
 
 			billBoardMatrix.m[3][0] = 0.0f;
 			billBoardMatrix.m[3][1] = 0.0f;
-			billBoardMatrix.m[3][2] = 0.0f;*/
+			billBoardMatrix.m[3][2] = 0.0f;
+
+			worldMatrix = Multiply(scaleMatrix, Multiply(billBoardMatrix, translateMatrix));
+
+			Transform cameraTransform{
+				{1.0f,1.0f,1.0f},
+				{std::numbers::pi_v<float> / 3.0f,std::numbers::pi_v<float>,0.0f},
+				{0.0f,23.0f,10.0f}
+			};
+
+
 
 			//instancing用
 			Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
@@ -1375,8 +1385,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 					continue;
 				}
 
-				Matrix4x4 worldMatrix =
-					MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
+				/*Matrix4x4 worldMatrix =
+					MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);*/
 				Matrix4x4 worldViewprojectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 
 				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
@@ -1408,6 +1418,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 				}
 
 			}
+
+
+
 
 
 
