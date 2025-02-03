@@ -93,8 +93,9 @@ void DirectXCommon::Initialize(WinApp* winApp) {
 	//FPS固定化初期化
 	InitializeFixFPS();
 
-	this->winApp_ = winApp;
 	CreateDevice();
+
+	this->winApp_ = winApp;
 	CreateCommandRelevance();
 	CreateSwapChain();
 	CreateAllDescriptorHeap();
@@ -105,6 +106,8 @@ void DirectXCommon::Initialize(WinApp* winApp) {
 	CreateScissorRect();
 	CreateDxcCompiler();
 	ImGuiInitialize();
+
+
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetSRVCPUDescriptorHandle(uint32_t index) {
@@ -443,8 +446,9 @@ void DirectXCommon::CreateDevice() {
 		}
 	}
 	//デバイスの生成がうまくいかなかったので起動できない
-	assert(device_ != nullptr);
 	Logger::Log("Complete create D3D12Device!!!\n");//初期化完了ログを出す
+	assert(device_ != nullptr);
+
 
 }
 

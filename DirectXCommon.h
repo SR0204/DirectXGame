@@ -87,6 +87,8 @@ public:
 	ID3D12DescriptorHeap* GetRtvDescriptorHeap() const { return rtvDescriptorHeap.Get(); }
 	HANDLE GetFenceEvent() const { return fenceEvent; }
 
+	void Finalize();
+
 private://メンバ関数
 
 
@@ -182,7 +184,7 @@ private://メンバ関数
 	//記録時間(FPS固定用)
 	std::chrono::steady_clock::time_point reference_;
 
-	void Finalize();
+	
 
 private:
 

@@ -19,7 +19,7 @@
 #include"Transform.h"
 #include"Logger.h"
 #include"StringUtility.h"
-
+#include"D3DResourceLeakChecker.h"
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -170,7 +170,12 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 
 //windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
-	
+
+	//リークチェッカー
+	D3DResourceLeakChecker leakCheck;
+	/*Microsoft::WRL::ComPtr<IDXGIFactory7>dxgiFactory;
+	Microsoft::WRL::ComPtr<ID3D12Device>device;*/
+
 	//ポインタ
 	WinApp* winApp = nullptr;
 	winApp = new WinApp();
@@ -209,7 +214,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
 
 		//開放
-		infoQueue->Release();
+		//infoQueue->Release();
 
 		//抑制するメッセージのID
 		D3D12_MESSAGE_ID denyIds[] = {
@@ -405,7 +410,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//マテリアルにデータを書き込む
 	Vector4* MaterialData = nullptr;
-	
+
 	Matrix4x4* transformationMatrixDate = nullptr;
 
 	//書き込むためのアドレスを取得
@@ -536,7 +541,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	textureSrvHandleGPU.ptr += dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	// SRVの生成
 	dxCommon->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
-
 
 
 
@@ -678,10 +682,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	}
 
-
+	dxCommon->Finalize();
+	delete dxCommon;
 
 	//入力開放
 	delete input;
+
 
 
 
@@ -697,6 +703,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//windowsAPIの終了処理
 	winApp->Finalize();
+
 
 	//WindowsAPI開放処理
 	delete winApp;
