@@ -1418,7 +1418,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 
-				if (useBillBoard == false) {
+				if (useBillBoard == true) {
 
 					billBoardMatrix = MakeIdentity4x4();
 
