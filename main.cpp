@@ -78,6 +78,13 @@ struct Emitter {
 	float frequencyTime;
 };
 
+struct AccelerationField {
+
+	Vector3 acceleration;//加速度
+	AABB area;//範囲
+};
+
+
 // ウインドウプロシーシャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
@@ -1161,6 +1168,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 
 	bool useBillBoard = false;
+	bool useWind = false;
+
+	AccelerationField accelerationField;
+	accelerationField.acceleration = { 15.0f,0.0f,0.0f };
+	accelerationField.area.min = { -1.0f,-1.0f,-1.0f };
+	accelerationField.area.max = { 1.0f,1.0f,1.0f };
 
 	MSG msg{};
 	// ウインドウの×ボタンが押されるまでループ
@@ -1188,6 +1201,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("spriteScale", &transformSprite.scale.x, 0.01f);
 			ImGui::DragFloat3("spriteRotate", &transformSprite.rotate.x, 0.01f);
 			ImGui::Checkbox("useBillBoared", &useBillBoard);
+			ImGui::Checkbox("useWind", &useWind);
 			if (ImGui::Button("Add Particle")) {
 				particles.splice(particles.end(), Emit(emitter, randomEngine));
 				particles.splice(particles.end(), Emit(emitter, randomEngine));
