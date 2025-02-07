@@ -1262,6 +1262,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 					Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 
+					if (useWind) {
+						if (IsCollision(accelerationField.area, particleIterator->transform.translate)) {
+							particleIterator->velocity += accelerationField.acceleration * kDeltaTime;
+						}
+					}
+
+
 					particleIterator->transform.translate += particleIterator->velocity * kDeltaTime;
 					particleIterator->currentTime += kDeltaTime;
 					instancingData[numInstance].WVP = worldViewProjectionMatrix;
