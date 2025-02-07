@@ -902,7 +902,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	assert(SUCCEEDED(hr));
 
 	// モデル読み込み
-	ModelData modelData = LoadObjFile("Resources", "plane.obj");
+	ModelData modelData = LoadObjFile("Resources/model", "plane.obj");
 	// 頂点リソースを作る
 
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
