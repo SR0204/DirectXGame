@@ -179,6 +179,7 @@ void rotate_result(int result) {
 }
 
 
+
 //windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
