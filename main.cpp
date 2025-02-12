@@ -166,6 +166,17 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 
 }
 
+// コールバック関数のプロトタイプ宣言
+typedef void (*Callback)(int result);
+
+Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+
+// 判定を行うコールバック関数
+void rotate_result(int result) {
+
+	transform.rotate.x += 0.1f;
+
+}
 
 
 //windowsアプリでのエントリーポイント(main関数)
@@ -199,6 +210,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//入力の初期化
 	input = new Input();
 	input->Initialize(winApp);
+
+	Callback callback = rotate_result;
+
+	callback(0);
 
 
 #ifdef _DEBUG
@@ -510,7 +525,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	//Transform変数を作る
-	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+
 	Transform cameraTransform{ {1.0f,1.0f,1.0f}, {0.0f,0.0f,0.0f},{0.0f,0.0f,-5.0f} };
 
 	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
@@ -691,7 +706,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	
+
 
 	//#ifdef _DEBUG
 	//		debugController->Release();
